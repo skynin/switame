@@ -1,12 +1,16 @@
-import {useState, useEffect} from 'react';
-import { Button, Menu, Header, Footer, Text, Anchor, Grid, Box, Sidebar, Avatar, Nav } from 'grommet';
+import { Box } from 'grommet';
 
 function RightSide() {
   return (
+    <div>
     <Box background="light-2">
-      RightSide
+      Top gamers
     </Box>
-  )
+    <Box background="light-2">
+    News
+  </Box>
+  </div>
+)
 }
 
 export default RightSide;

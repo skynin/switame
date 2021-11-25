@@ -1,9 +1,8 @@
-import {useState, useEffect, useContext} from 'react';
-import {useNavigate, Link} from 'react-router-dom'
+import {useState} from 'react';
+import {useNavigate} from 'react-router-dom'
 import './App.css';
 
-import { Grommet, Button, Menu, Header, Footer, Text, Anchor, Grid, Box, Sidebar, Avatar, Nav, Image } from 'grommet';
-import { Home as IcoHome, Help as IcoHelp, Projects as IcoProjects, Clock as IcoClock } from 'grommet-icons'
+import { Grommet, Button, Footer, Text, Box, Image } from 'grommet';
 import { grommet, dark } from 'grommet/themes';
 
 import LeftSide from './components/LeftSide';
@@ -11,6 +10,7 @@ import RightSide from './components/RigtSide';
 import MainSection from './components/MainSection';
 import GridResponsive from './components/GridResponsive';
 import { ABOUT_ROUTE } from './utils/consts';
+import HeaderMenu from './components/HeaderMenu';
 // import { hpe } from 'grommet-theme-hpe';
 // import { aruba } from 'grommet-theme-aruba';
 // import { hp } from 'grommet-theme-hp';
@@ -33,10 +33,7 @@ function App() {
 
   return (
     <Grommet theme={THEMES[themeName || 'grommet']}>
-      <Header background="brand">
-        <Button icon={<IcoHome />} hoverIndicator onClick={()=>navigate('/')}/>
-        <Menu label="account" items={[{ label: 'logout' }]} />
-      </Header>
+      <HeaderMenu/>
 
       <GridResponsive gridType={'app'}>
         <LeftSide gridArea="lSection"/>

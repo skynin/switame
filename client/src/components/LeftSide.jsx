@@ -1,17 +1,28 @@
-import {useState, useEffect} from 'react';
-import { Button, Menu, Header, Footer, Text, Anchor, Grid, Box, Sidebar, Avatar, Nav, Image } from 'grommet';
+import { useContext } from 'react';
+import { Avatar, Image, CardFooter, CardBody, Card } from 'grommet';
+import { Link } from 'react-router-dom';
+import { USER_ROUTE } from '../utils/consts';
+import { Context } from '../index';
+import { observer } from "mobx-react-lite"
 
-function LeftSide() {
-  let avatarHash = 'f9879d71858b5ff21e4963273a886bfc' // wavatar, robohash, retro, monsterid, identicon
+let LeftSide = () => {
+
+  const {userStore} = useContext(Context)
 
   return (
-    <Box  background="light-2">
-      <Avatar size="large" margin="small">
-        <Image src={'https://www.gravatar.com/avatar/'+avatarHash+'?d=wavatar'}/>
+    <Card background="light-2" align='center' height="xsmall">
+      <CardBody>
+      <Link to={USER_ROUTE}>
+      <Avatar size="large" margin="xxsmall">
+        <Image src={userStore.currUser.avatarUrl()}/>
       </Avatar>
-      LeftSide
-    </Box>
+      </Link>
+      </CardBody>
+      <CardFooter>{userStore.currUser.nickname}</CardFooter>
+    </Card>
   )
 }
+
+LeftSide = observer(LeftSide)
 
 export default LeftSide;

@@ -5,7 +5,7 @@ const areaTypes= {
   app: {
     desktop: {
       rows: ['auto'],
-      columns: [['auto','small'], ['small','auto'],['auto','medium']],
+      columns: [['auto','small'], ['small','auto'],['auto','small']],
       areas: [
         { name: 'lSection', start: [0, 0], end: [0, 0] },
         { name: 'mSection', start: [1, 0], end: [1, 0] },
@@ -21,7 +21,26 @@ const areaTypes= {
         { name: 'rSection', start: [0, 2], end: [0, 2]},
       ]
     }
-  }
+  },
+  user: {
+    desktop: {
+      rows: ['auto'],
+      columns: [['auto','auto'], ['medium','small']],
+      areas: [
+        { name: 'lSection', start: [0, 0], end: [0, 0] },
+        { name: 'rSection', start: [1, 0], end: [1, 0] },
+      ]
+    },
+    mobile: {
+      rows: ['auto','auto'],
+      columns: ['auto'],
+      areas: [
+        { name: 'lSection', start: [0, 0], end: [0, 0]},
+        { name: 'rSection', start: [0, 1], end: [0, 1]},
+      ]
+    }
+  },
+
 }
 
 const kindOf = isMobile ? 'mobile' : 'desktop'

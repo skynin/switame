@@ -1,5 +1,5 @@
-import {React, useContext} from 'react'
-import {Routes, Route, Navigate} from 'react-router-dom'
+import {React} from 'react'
+import {Routes, Route} from 'react-router-dom'
 import NoMatchPage from '../pages/NoMatchPage';
 import {authRoutes, publicRoutes} from '../routes'
 // import {authRoutes, publicRoutes} from '../routes'
@@ -10,6 +10,10 @@ function AppRouter() {
 
   return (
     <Routes >
+      {authRoutes.map(({path, element}) =>
+          <Route key={path} path={path} element={element}/>
+        )
+      }
       {publicRoutes.map(({path, element}) =>
           <Route key={path} path={path} element={element}/>
         )

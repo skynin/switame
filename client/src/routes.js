@@ -1,6 +1,8 @@
-import { ABOUT_ROUTE } from "./utils/consts"
+import { ABOUT_ROUTE, USER_ROUTE } from "./utils/consts"
 import AboutPage from "./pages/AboutPage"
 import MainPage from "./pages/MainPage"
+import UserPage from "./pages/UserPage"
+
 
 export const authRoutes = [
   /*{
@@ -17,6 +19,10 @@ export const publicRoutes = [
   {
     path: ABOUT_ROUTE,
     element: <AboutPage/>
+  },
+  {
+    path: USER_ROUTE,
+    element: <UserPage/>
   },
   {
     path: '/',
