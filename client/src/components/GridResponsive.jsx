@@ -5,7 +5,7 @@ const areaTypes= {
   app: {
     desktop: {
       rows: ['auto'],
-      columns: [['auto','small'], ['small','auto'],['auto','small']],
+      columns: [['auto','small'], ['small','auto'],['auto','medium']],
       areas: [
         { name: 'lSection', start: [0, 0], end: [0, 0] },
         { name: 'mSection', start: [1, 0], end: [1, 0] },

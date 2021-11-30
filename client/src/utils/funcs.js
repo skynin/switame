@@ -5,7 +5,7 @@ export const randomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min; //Максимум и минимум включаются
 }
 
-let tttID = 999
+var tttID = 999
 export const tempid=(prefix)=>{
   return (prefix || '') + (++tttID);
 }

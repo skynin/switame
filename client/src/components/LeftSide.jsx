@@ -1,25 +1,37 @@
-import { useContext } from 'react';
+import { useMemo } from 'react';
 import { Avatar, Image, CardFooter, CardBody, Card } from 'grommet';
 import { Link } from 'react-router-dom';
 import { USER_ROUTE } from '../utils/consts';
-import { Context } from '../index';
+import { useGameStore, useUserStore } from '../index';
 import { observer } from "mobx-react-lite"
 
 let LeftSide = () => {
 
-  const {userStore} = useContext(Context)
+  const userStore = useUserStore()
+  const gameStore = useGameStore()
+
+  const game = gameStore.secondGame
+  const currUser = userStore.currUser
+
+  const GArea = useMemo(() => game.GameArea('view'), [game.id])
 
   return (
+    <div>
     <Card background="light-2" align='center' height="xsmall">
       <CardBody>
       <Link to={USER_ROUTE}>
       <Avatar size="large" margin="xxsmall">
-        <Image src={userStore.currUser.avatarUrl()}/>
+        <Image src={currUser.avatarUrl()}/>
       </Avatar>
       </Link>
       </CardBody>
-      <CardFooter>{userStore.currUser.nickname}</CardFooter>
+      <CardFooter>{currUser.nickname}</CardFooter>
     </Card>
+    <hr/>
+    <Card>
+      <GArea/>
+    </Card>
+    </div>
   )
 }
 

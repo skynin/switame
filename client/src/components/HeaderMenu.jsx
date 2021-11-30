@@ -1,34 +1,39 @@
-import {useState, useContext} from 'react';
+import { useMemo, useState } from 'react';
 import { Button, Menu, Header, Layer, FormField, TextInput, Box, Notification } from 'grommet';
 import { USER_ROUTE } from '../utils/consts';
 import { Home as IcoHome } from 'grommet-icons'
-import {useNavigate} from 'react-router-dom'
-import { Context } from '../index'
+import { useNavigate } from 'react-router-dom'
+import { useUserStore } from '../index'
 
 function HeaderMenu() {
 
-  const {userStore} = useContext(Context)
+  const userStore = useUserStore()
+  const currUser = userStore.currUser
 
   const [showModal, setShowModal] = useState(false)
 
   const navigate = useNavigate()
 
-  const leftMenu = [
-    { label: 'profile', onClick: () => navigate(USER_ROUTE) }
-  ]
+  const leftMenu = useMemo(() => {
+    const leftMenu = [
+      { label: 'profile', onClick: () => navigate(USER_ROUTE) }
+    ]
 
-  if (userStore.currUser.isAuth) {
-    leftMenu.push({ label: 'logout', onClick: () => {userStore.currUser.logout(); navigate('/')} })
-  }
-  else {
-    leftMenu.push({ label: 'login', onClick: () => setShowModal(true)})
-  }
+    if (currUser.isAuth) {
+      leftMenu.push({ label: 'logout', onClick: () => {currUser.logout(); navigate('/')} })
+    }
+    else {
+      leftMenu.push({ label: 'login', onClick: () => setShowModal(true)})
+    }
+
+    return leftMenu
+  },[currUser.id, currUser.isAuth])
 
   return (
       <Header background="brand">
         <Button icon={<IcoHome />} hoverIndicator onClick={()=>navigate('/')}/>
         <Menu label="account" items={leftMenu} />
-        {showModal && <AuthModal currUser={userStore.currUser} setShow={setShowModal}/>}
+        {showModal && <AuthModal currUser={currUser} setShow={setShowModal}/>}
       </Header>
   )
 }

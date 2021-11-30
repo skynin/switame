@@ -1,6 +1,6 @@
 import { nanoid } from '../utils/funcs';
 import MD5 from '../utils/md5';
-import { makeObservable, observable, runInAction } from "mobx"
+import { action, makeObservable, observable, runInAction } from "mobx"
 
 function createAvatarId(id, authId) {
   return MD5(id + authId)
@@ -26,14 +26,13 @@ export default class UserModel {
       avatarType: observable,
       nickname: observable,
       isAuth: observable,
+      updateFrom: action
   })
   }
 
   updateFrom(obj) {
-    runInAction(() => {
-      this.nickname = obj.nickname;
-      this.avatarType = obj.avatarType;
-      })
+    this.nickname = obj.nickname;
+    this.avatarType = obj.avatarType;
   }
 
   save() {

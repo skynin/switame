@@ -1,4 +1,4 @@
-// import { useState, useContext, useEffect } from 'react';
+// import { useState, useEffect } from 'react';
 import { Image } from 'grommet';
 // import { observer } from "mobx-react-lite";
 // import { Context } from '..';
