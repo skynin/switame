@@ -17,8 +17,13 @@ function initNewUser(obj) {
 }
 
 export default class UserModel {
-  constructor() {
+  constructor(args) {
     initNewUser(this)
+
+    if (args) {
+      const {nickname} = args
+      if (nickname) this.nickname = nickname
+    }
 
     makeObservable(this, {
       id: observable,

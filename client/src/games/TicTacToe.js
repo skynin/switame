@@ -1,7 +1,28 @@
-import { Box, Grid } from "grommet"
+import { Box, Grid, Button } from "grommet"
 import TicTacToeCell from "./TicTacToeCell"
 import { tempid } from "../utils/funcs"
 import GameModel from "../models/GameModel"
+import UserAvatar from "../components/UserAvatar"
+import { observer } from "mobx-react-lite"
+
+const UserPlay = ({user}) => {
+  return (
+    <div>
+      <UserAvatar user={user} mode="game-board"/>
+    </div>
+  )
+}
+
+const ButtonPlay = observer(({game}) => {
+
+  function click() {
+    game.statusNext()
+  }
+
+  return (
+    <Button margin="small" hoverIndicator={true} pad="xsmall" onClick={e => click()} label={game.statusName}/>
+  )
+})
 
 export default class TicTacToe extends GameModel {
 
@@ -26,6 +47,35 @@ export default class TicTacToe extends GameModel {
 
   // *** React components
 
+  GameBoardHead(args) {
+    const game = this
+
+    return observer(() => {
+    return (
+      <div>
+        <Box direction="row">
+          <UserPlay user={game.userTop}/>&nbsp;
+          <UserPlay user={game.userBottom}/>
+        </Box>
+        <Box direction="row"><ButtonPlay game={game}/></Box>
+      </div>
+    )})
+  }
+
+  GameBoardFooter(args) {
+    const game = this
+
+    return observer(() => {
+
+    const gameStatus = game.status != 'none' ? game.status : 'Инфа о ходе игры'
+
+    return (
+      <div>
+        <Box>{gameStatus}</Box>
+      </div>
+    )})
+  }
+
   /**
    * Ячейки доски нумеруются - колонка строка
    * 23 - вторая колонка, третья строка
@@ -33,7 +83,7 @@ export default class TicTacToe extends GameModel {
    * @returns
    */
   GameBoard(args) {
-    let game = this
+    const game = this
 
     const rowSize = 'xsmall';
     const columnSize = 'xsmall';

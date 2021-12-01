@@ -1,6 +1,9 @@
 import { tempid } from '../utils/funcs'
 import { Box } from "grommet"
 import GameCell from './GameCell'
+import UserModel from './UserModel'
+import { observer } from "mobx-react-lite"
+import { makeObservable, observable, runInAction, action, computed } from "mobx"
 
 /*
 Шаблон-демо модели
@@ -19,13 +22,47 @@ export default class GameModel {
   id
   cells
 
+  status = 'none' // play, pause, finish
+
+  userTop
+  userBottom
+
   constructor(id) {
     this.id = id || tempid('g')
 
     this.cells = new Map()
+
+    this.userTop = new UserModel({nickname: 'bot Top'})
+    this.userBottom = new UserModel({nickname: 'bot Bottom'})
+
+    makeObservable(this, {
+      status: observable,
+      statusNext: action,
+      statusName: computed
+    })
   }
 
   // * * * Public
+
+  statusNext(args) {
+    switch (this.status) {
+      case 'play':
+        this.status = 'pause'
+        break;
+      case 'pause':
+          this.status = 'play'
+          break;
+      case 'finish':
+          this.status = null
+          break;
+      default:
+        this.status = 'play'
+      }
+  }
+
+  get statusName() {
+    return this.status || 'Старт'
+  }
 
   /**
    Общий блок игрового пространства.
@@ -35,6 +72,8 @@ export default class GameModel {
  */
  GameArea(args) {
   let game = this
+
+  // if (args == 'big')
 
   const GBoard = game.GameBoard(args)
   const GameBoardHead = game.GameBoardHead(args)

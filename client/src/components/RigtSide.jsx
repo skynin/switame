@@ -1,8 +1,14 @@
 import { Box } from 'grommet';
+import { useChatStore } from '..';
+import { observer } from 'mobx-react-lite';
+import ChatSection from './ChatSection';
 
-function RightSide() {
+const RightSide = observer(() => {
 
-  // TODO чат при для активной игры
+  const chatStore = useChatStore()
+
+  if (chatStore.showChat)
+    return <ChatSection chat={chatStore}/>
 
   return (
   <div>
@@ -15,6 +21,6 @@ function RightSide() {
     </Box>
   </div>
 )
-}
+})
 
 export default RightSide;

@@ -39,7 +39,7 @@ const AvatarChange = ({currUser, currAvType, update}) => {
         name="avatar"
         options={avatarVariants}
         value={currAvType}
-        onChange={({ target: { value } }) => {console.log(value); update(value)}}
+        onChange={({ target: { value } }) => {update(value)}}
         children={(option, { checked, hover }) =>
         <Card key={option} border={checked ? avBorder : false}>
           <Avatar size="medium" margin="small" >

@@ -1,0 +1,8 @@
+{
+    // "extends": "eslint:all",
+    "extends": "eslint:recommended",
+    "rules": {
+        "eqeqeq": "off",
+        "no-unused-vars": "off"
+    }
+}

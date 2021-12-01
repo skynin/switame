@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { USER_ROUTE } from '../utils/consts';
 import { useGameStore, useUserStore } from '../index';
 import { observer } from "mobx-react-lite"
+import UserAvatar from './UserAvatar';
 
 let LeftSide = () => {
 
@@ -17,16 +18,7 @@ let LeftSide = () => {
 
   return (
     <div>
-    <Card background="light-2" align='center' height="xsmall">
-      <CardBody>
-      <Link to={USER_ROUTE}>
-      <Avatar size="large" margin="xxsmall">
-        <Image src={currUser.avatarUrl()}/>
-      </Avatar>
-      </Link>
-      </CardBody>
-      <CardFooter>{currUser.nickname}</CardFooter>
-    </Card>
+      <UserAvatar user={currUser} mode="left-side"/>
     <hr/>
     <Card>
       <GArea/>

@@ -5,32 +5,35 @@ import './index.css';
 import App from './App';
 import UserStore from './stores/UserStore';
 import GameStore from './stores/GameStore';
+import ChatStore from './stores/ChatStore';
 //LATER: import reportWebVitals from './reportWebVitals';
 
-export const Context = React.createContext(null)
-
 export const useUserStore = () => {
-  const {userStore: context} = React.useContext(Context)
+  return allStores.userStore
+  /*const {userStore: context} = React.useContext(Context)
   if (context === undefined) {
     throw new Error('useUserStore must be used within a CountProvider')
   }
-  return context
+  return context*/
 }
 
 export const useGameStore = () => {
-  const {gameStore: context} = React.useContext(Context)
-  if (context === undefined) {
-    throw new Error('useGameStore must be used within a CountProvider')
-  }
-  return context
+  return allStores.gameStore
 }
+
+export const useChatStore = () => {
+  return allStores.chatStore
+}
+
+var allStores = {userStore: new UserStore(), gameStore: new GameStore(), chatStore: new ChatStore()}
+
+// export const Context = React.createContext(null)
+// <Context.Provider value={{userStore: new UserStore(), gameStore: new GameStore(), chatStore: new ChatStore()}}>
 
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
-      <Context.Provider value={{userStore: new UserStore(), gameStore: new GameStore()}}>
       <App />
-      </Context.Provider>
     </BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')

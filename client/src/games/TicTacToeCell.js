@@ -3,6 +3,7 @@ import { Box } from "grommet"
 import { observer } from "mobx-react-lite"
 import { makeObservable, observable, runInAction, action } from "mobx"
 import GameCell from "../models/GameCell"
+import { useChatStore } from ".."
 
 function CellShow({chip, brim}) {
   const color = chip == 'O' ? 'red' : 'green'
@@ -13,7 +14,13 @@ function CellShow({chip, brim}) {
 
 const uniRender = observer ( ({cell}) => {
 
+  const chatStore = useChatStore()
+
   function clickCell(cell) {
+    const timeElapsed = Date.now();
+    const today = new Date(timeElapsed);
+
+    chatStore.pushMessage('click '+ today.toISOString(), cell.game.id)
     cell.click()
   }
 
