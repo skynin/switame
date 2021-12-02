@@ -1,12 +1,16 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { Box } from "grommet"
 import { observer } from "mobx-react-lite"
 import { makeObservable, observable, runInAction, action } from "mobx"
 import GameCell from "../models/GameCell"
 import { useChatStore } from ".."
 
-function CellShow({chip, brim}) {
-  const color = chip == 'O' ? 'red' : 'green'
+function CellShow({chip, brim, wait}) {
+
+  if (chip == 'chip') chip = ""
+
+  let color = chip == 'O' ? 'red' : 'green'
+  if (wait) {color = 'gray'; chip='?'}
   return (
     <div style={{color: color, fontSize: "64px"}}>{chip}</div>
   )
@@ -16,17 +20,25 @@ const uniRender = observer ( ({cell}) => {
 
   const chatStore = useChatStore()
 
-  function clickCell(cell) {
-    const timeElapsed = Date.now();
-    const today = new Date(timeElapsed);
+  const clickCell = () => {
+      cell.click(null,() => {
+        const timeElapsed = Date.now();
+        const today = new Date(timeElapsed);
 
-    chatStore.pushMessage('click '+ today.toISOString(), cell.game.id)
-    cell.click()
-  }
+        chatStore.pushMessage('click '+ today.toISOString(), cell.game.id)
+        })
+    }
+
+  useEffect(() => {
+    if (cell.info) {
+      chatStore.pushMessage(cell.info, cell.game.id)
+      cell.info = null
+    }
+  })
 
   return (
-    <Box border="all" align="center" justify="center" onClick={e => clickCell(cell) }>
-      {cell.chip != 'chip' && <CellShow chip={cell.chip} /> }
+    <Box border="all" align="center" justify="center" onClick={e => clickCell() }>
+      <CellShow chip={cell.chip} wait={cell.wait}/>
     </Box>
   )
 })
@@ -35,13 +47,6 @@ export default class TicTacToeCell extends GameCell {
 
   constructor(id, game, args) {
     super(id, game, args)
-  }
-
-  click() {
-    runInAction(()=>{
-      // console.log(this.chip)
-      this.chip = this.chip == 'O' ? 'X' : 'O'
-    })
   }
 
   /**

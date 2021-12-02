@@ -4,6 +4,9 @@ import { tempid } from "../utils/funcs"
 import GameModel from "../models/GameModel"
 import UserAvatar from "../components/UserAvatar"
 import { observer } from "mobx-react-lite"
+import { runInAction } from "mobx"
+import { useEffect } from "react"
+import { useChatStore } from ".."
 
 const UserPlay = ({user}) => {
   return (
@@ -19,6 +22,15 @@ const ButtonPlay = observer(({game}) => {
     game.statusNext()
   }
 
+  const chatStore = useChatStore()
+
+  useEffect(() => {
+    if (game.info) {
+      chatStore.pushMessage(game.info, game.id)
+      game.info = null
+    }
+  })
+
   return (
     <Button margin="small" hoverIndicator={true} pad="xsmall" onClick={e => click()} label={game.statusName}/>
   )
@@ -28,6 +40,10 @@ export default class TicTacToe extends GameModel {
 
   constructor(id) {
     super(id)
+
+    runInAction(() => {
+      this.wait = true
+    })
   }
 
   /**
@@ -38,7 +54,7 @@ export default class TicTacToe extends GameModel {
     for (let col=1; col < 4; ++col) {
       for (let row=1; row < 4; ++row) {
         let tCell = new TicTacToeCell(''+col+row, this)
-        this.cells.set(tCell.id, tCell)
+        this.cells[tCell.id] = tCell
       }
     }
 
@@ -98,7 +114,7 @@ export default class TicTacToe extends GameModel {
       return '' + key.charAt(0) + key.charAt(1)
     }
 
-    const arrCells = Array.from(game.cells);
+    const arrCells = Object.entries(game.cells);
 
     return () => {
 

@@ -1,11 +1,40 @@
+export const debounce = function(func, wait, immediate) {
+  var timeout, result;
+  return function() {
+    var context = this, args = arguments;
+    var later = function() {
+      timeout = null;
+      if (!immediate) result = func.apply(context, args);
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) result = func.apply(context, args);
+    return result;
+  };
+}
+
+export const throttle = (func, timeFrame, delay) => {
+  var lastTime = 0;
+  return function (...args) {
+      var now = new Date();
+      if (now - lastTime >= timeFrame) {
+          lastTime = now;
+          setTimeout(() => func(...args), delay || 1) // в очередь
+      }
+  };
+}
+
 export const randomInt = (min, max) => {
+  if (min == max) return min
+
   // https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Math/random
   min = Math.ceil(min);
   max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min; //Максимум и минимум включаются
+  return Math.floor(Math.random() * (max - min + 1)) + min; // Минимум и максимум включаются
 }
 
-var tttID = 999
+var tttID = 99
 export const tempid=(prefix)=>{
   return (prefix || '') + (++tttID);
 }

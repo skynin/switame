@@ -4,6 +4,7 @@ import GameCell from './GameCell'
 import UserModel from './UserModel'
 import { observer } from "mobx-react-lite"
 import { makeObservable, observable, runInAction, action, computed } from "mobx"
+import switAPI from '../API'
 
 /*
 Шаблон-демо модели
@@ -27,37 +28,154 @@ export default class GameModel {
   userTop
   userBottom
 
+  wait = false
+
   constructor(id) {
     this.id = id || tempid('g')
 
-    this.cells = new Map()
+    this.cells = Object.create(null)
 
     this.userTop = new UserModel({nickname: 'bot Top'})
     this.userBottom = new UserModel({nickname: 'bot Bottom'})
 
+    switAPI().subscribe('game', this.id, impact => this.receive(impact))
+
     makeObservable(this, {
       status: observable,
-      statusNext: action,
+      wait: observable,
       statusName: computed
     })
   }
 
   // * * * Public
 
+  /**
+   *
+   * @param {Array|Object} impact массив или объект для изменения состояния игры, клеток
+   * @returns {void}
+   */
+   receive(impact) {
+    if (Array.isArray(impact)) {
+      for(let eachImpact of impact) this.receive(eachImpact)
+      return
+    }
+
+    if (impact.error) {
+      console.error(impact.error)
+      return
+    }
+
+    if (impact?.act == 'click') {
+      this.sendClick(impact)
+      return;
+    }
+
+    runInAction(() => {
+      if (impact.wait || impact.wait === false) {
+        this.wait = impact.wait
+      }
+    })
+
+    if (impact?.receiver?.kind == 'board') {
+      this.receiveBoard(impact)
+      return;
+    }
+
+    if (impact?.receiver?.kind == 'game') {
+      this.receiveGame(impact)
+      return;
+    }
+
+    console.error('Unhandled',impact)
+  }
+
+  sendClick(impact) {
+    if (impact.sender.kind == 'cell') {
+
+      if (this.wait) {
+        let cellId = impact.sender.id
+        this.cells[cellId].receive({id: cellId, info: 'Ждем ответа...'})
+        return
+      }
+
+      runInAction(()=>{
+        this.wait = tempid('sg') // для идентификации ответа
+      })
+
+      // отправить на сервер
+      switAPI().dispatch({
+        sender: this.DTO,
+        stamp: this.wait, // для идентификации ответа
+        impact
+      })
+    }
+
+    if (impact.sender.kind == 'button') {
+      // TODO отправить на сервер
+    }
+  }
+
+  receiveGame(impact) {
+    runInAction(() => {
+      if (impact.status) this.status = impact.status
+    })
+
+    if (impact.cells) this.receiveBoard(impact)
+  }
+
+  receiveBoard(impact) {
+    try {
+
+      console.log('receiveBoard',impact)
+
+      if (impact.cells) {
+      // изменение клеток доски
+      // пройтись по всем клеткам и изменить
+      for (let eachCell of impact.cells) {
+          let cell = this.cells[eachCell.id]
+
+          cell.receive(eachCell)
+        }
+      }
+    } catch (e) {
+      console.error('recieveBoard',impact,e)
+    }
+  }
+
+  get DTO() {
+    let cells = Object.values(this.cells).map(eachCell => eachCell.DTO)
+
+    return {
+      id: this.id,
+      kind: 'game',
+      status: this.status,
+      wait: this.wait,
+      cells
+    }
+  }
+
   statusNext(args) {
+
+    let newStatus = this.status
+
     switch (this.status) {
       case 'play':
-        this.status = 'pause'
+        newStatus = 'pause'
         break;
       case 'pause':
-          this.status = 'play'
-          break;
+        newStatus = 'play'
+        break;
       case 'finish':
-          this.status = null
-          break;
+        newStatus = null
+        break;
       default:
-        this.status = 'play'
+        newStatus = 'play'
       }
+
+    switAPI().dispatch({
+      sender: this.DTO,
+      act: newStatus
+    })
   }
 
   get statusName() {
@@ -97,7 +215,7 @@ export default class GameModel {
   initEmpty() {
     for (let iii=5; iii>0; --iii) {
       let tCell = new GameCell(null, this)
-      this.cells.set(tCell.id, tCell)
+      this.cells[tCell.id] = tCell
     }
 
     return this
@@ -141,7 +259,7 @@ export default class GameModel {
       return (
         <Box>
           Board Area
-          {Array.from(game.cells).map(([cellID, cell]) =>
+          {Object.entries(game.cells).map(([cellID, cell]) =>
             <GCell key={cellID} cell={cell}/>
           )}
         </Box>
