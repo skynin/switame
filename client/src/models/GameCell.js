@@ -21,12 +21,16 @@ export default class GameCell {
     this.chip = chip
     this.brim = brim
     this.wait = wait
+    this.effect = ""
+
+    this.receivedCell = ['wait','chip','brim','info','effect']
 
     makeObservable(this, {
       id: observable,
       chip: observable,
       brim: observable,
       wait: observable,
+      effect: observable,
       click: action
   })
   }
@@ -39,10 +43,10 @@ export default class GameCell {
     runInAction(()=> {
       this.wait = false
 
-      if (impact.wait) this.wait = impact.wait
-      if (impact.chip) this.chip = impact.chip
-      if (impact.brim) this.brim = impact.brim
-      if (impact.info) this.info = impact.info
+      for (let fld of this.receivedCell) {
+        if (impact[fld] !== undefined)
+          this[fld] = impact[fld]
+      }
     })
   }
 

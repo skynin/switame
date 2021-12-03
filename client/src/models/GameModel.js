@@ -242,7 +242,7 @@ export default class GameModel {
   GameCell() {
     return observer( ({cell}) => {
       return (
-        <Box>
+        <Box border={cell.effect.indexOf('last') >= 0 ? 'all' : false}>
           {cell.id} : {cell.chip} - {cell.brim}
         </Box>
       )

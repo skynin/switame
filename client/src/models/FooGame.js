@@ -27,6 +27,7 @@ export default class FooGame extends GameModel {
 
     return this
   }
+
   startAutoPlay() {
     const game = this;
 
@@ -43,19 +44,25 @@ export default class FooGame extends GameModel {
 
     let starLength = arrStars.length-1, count = 1
 
+    let lastCell = gameCells[0];
+
     function isFillArea() {
       return gameCells.filter(b => b.brim.length < 3).length == 0
     }
 
     function oneStep() {
+
+      lastCell.receive({id: lastCell.id, effect: '' })
+
       let cellRand = gameCells[randomInt(0, sizeBoard-1)]
+      lastCell = cellRand
 
       let chip = '???'
       do {
         chip = currBot + ' ' + arrStars[randomInt(0, starLength)]
       } while (chip == cellRand.chip)
 
-      let newCell = {id: cellRand.id, chip }
+      let newCell = {id: cellRand.id, chip, effect: 'last' }
       if (randomInt(1,sizeBoard) == 1) newCell.brim = currBot + ' ' + arrBrim[randomInt(0, arrBrim.length-1)]
       else if (cellRand.brim.charAt(0) == currBot // свое поле
         && cellRand.chip.charAt(0) != currBot // чужая фишка
