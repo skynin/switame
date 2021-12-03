@@ -58,10 +58,10 @@ export default class AiTicTacToe {
       }
 
       dispatcher(result)
-      if (canBotStep) setTimeout(() => dispatcher(funcBotStep(impact, manCell)), 300)
+      if (canBotStep) setTimeout(() => dispatcher(funcBotStep(impact, manCell)), 30)
     }
 
-    setTimeout(calcMotion, 300)
+    setTimeout(calcMotion, 30)
   }
 
   // ход бота

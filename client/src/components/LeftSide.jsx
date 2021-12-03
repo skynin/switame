@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Avatar, Image, CardFooter, CardBody, Card } from 'grommet';
+import { Avatar, Image, CardHeader, CardFooter, CardBody, Card } from 'grommet';
 import { Link } from 'react-router-dom';
 import { USER_ROUTE } from '../utils/consts';
 import { useGameStore, useUserStore } from '../index';
@@ -21,7 +21,9 @@ let LeftSide = () => {
       <UserAvatar user={currUser} mode="left-side"/>
     <hr/>
     <Card>
-      <GArea/>
+      <CardHeader>Сейчас играют</CardHeader>
+      <CardBody><GArea/></CardBody>
+      <CardFooter>&#10148;</CardFooter>
     </Card>
     </div>
   )

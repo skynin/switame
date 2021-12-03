@@ -46,7 +46,7 @@ function App() {
           <Box height="32px" width="32px" border="all">
             <Image fit="cover" src="/logo192.png"/>
           </Box>
-          <Text>Skynin Wit Games</Text>
+          <Text>Skynin Wit Games <b>v0.1.0</b></Text>
         </Box>
         <Button label="About" onClick={()=>navigate(ABOUT_ROUTE)}/>
       </Footer>

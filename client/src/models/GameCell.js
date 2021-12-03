@@ -14,11 +14,9 @@ export default class GameCell {
   wait = false
   info
 
-  constructor(id, game, args) {
+  constructor(id, game, {brim='brim', chip='chip', wait=false} = {}) {
     this.id = id || tempid('c')
     this.game = game
-
-    let {brim, chip, wait} = args || {brim: 'brim', chip: 'chip', wait: false}
 
     this.chip = chip
     this.brim = brim

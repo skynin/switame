@@ -229,7 +229,7 @@ export default class GameModel {
 
   /** @protected */
   GameBoardHead(args) {
-    if (args != 'big') return () => {return (<div></div>)}
+    if (args != 'big') return () => {return (<div>Foo vs Bar</div>)}
 
     return () => {
       return (
@@ -240,13 +240,13 @@ export default class GameModel {
 
   /** @protected */
   GameCell() {
-    return ({cell}) => {
+    return observer( ({cell}) => {
       return (
         <Box>
           {cell.id} : {cell.chip} - {cell.brim}
         </Box>
       )
-    }
+    })
   }
 
   /** @protected */
@@ -258,7 +258,6 @@ export default class GameModel {
     return () => {
       return (
         <Box>
-          Board Area
           {Object.entries(game.cells).map(([cellID, cell]) =>
             <GCell key={cellID} cell={cell}/>
           )}
