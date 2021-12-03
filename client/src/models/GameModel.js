@@ -268,7 +268,9 @@ export default class GameModel {
 
   /** @protected */
   GameBoardFooter(args) {
-    if (args != 'big') return () => {return (<div></div>)}
+    let game = this
+
+    if (args != 'big') return observer(() => {return (<div>&#10148; {game.status}</div>)})
 
     return () => {
       return (

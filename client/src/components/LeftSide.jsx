@@ -23,7 +23,7 @@ let LeftSide = () => {
     <Card>
       <CardHeader>Сейчас играют</CardHeader>
       <CardBody><GArea/></CardBody>
-      <CardFooter>&#10148;</CardFooter>
+      <CardFooter></CardFooter>
     </Card>
     </div>
   )
