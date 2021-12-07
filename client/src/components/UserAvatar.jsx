@@ -3,6 +3,7 @@ import { USER_ROUTE } from '../utils/consts';
 import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 
+
 const modes = {
   'left-side': {
     height: "xsmall",

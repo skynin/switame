@@ -16,7 +16,7 @@ const UserPlay = ({user}) => {
   )
 }
 
-const ButtonPlay = observer(({game}) => {
+const delete_ButtonPlay = observer(({game}) => {
 
   function click() {
     game.statusNext()
@@ -32,7 +32,7 @@ const ButtonPlay = observer(({game}) => {
   })
 
   return (
-    <Button margin="small" hoverIndicator={true} pad="xsmall" onClick={e => click()} label={game.statusName}/>
+    <Button margin="small" hoverIndicator={true} pad="xsmall" onClick={e => click()} label={game.statusNextName}/>
   )
 })
 
@@ -63,7 +63,7 @@ export default class TicTacToe extends GameModel {
 
   // *** React components
 
-  GameBoardHead(args) {
+  delete_GameBoardHead(args) {
     const game = this
 
     return observer(() => {
@@ -78,12 +78,12 @@ export default class TicTacToe extends GameModel {
     )})
   }
 
-  GameBoardFooter(args) {
+  delete_GameBoardFooter(args) {
     const game = this
 
     return observer(() => {
 
-    const gameStatus = game.status != 'none' ? game.status : 'Инфа о ходе игры'
+    const gameStatus = game.statusLine != 'none' ? game.status : 'Инфа о ходе игры'
 
     return (
       <div>

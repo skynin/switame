@@ -1,3 +1,7 @@
+export const isString = (value) => {
+	return typeof value === 'string' || value instanceof String;
+}
+
 export const debounce = function(func, wait, immediate) {
   var timeout, result;
   return function() {

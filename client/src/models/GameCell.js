@@ -13,6 +13,7 @@ export default class GameCell {
   brim
   wait = false
   info
+  effect
 
   constructor(id, game, {brim='brim', chip='chip', wait=false} = {}) {
     this.id = id || tempid('c')
@@ -35,13 +36,27 @@ export default class GameCell {
   })
   }
 
+  actClear(impact) {
+    this.chip = 'chip'
+    this.brim = 'brim'
+    this.info = null
+    this.effect = ""
+}
+
   receive(impact) {
     if (impact.id != this.id) {
       throw 'cell impact.id != this.id'
     }
 
     runInAction(()=> {
+
       this.wait = false
+
+      let nameActFunc = impact.act && ('act' + impact.act.charAt(0).toUpperCase() + impact.act.slice(1))
+
+      if (nameActFunc && this[nameActFunc]) {
+        (this[nameActFunc])(impact)
+      }
 
       for (let fld of this.receivedCell) {
         if (impact[fld] !== undefined)
@@ -64,9 +79,9 @@ export default class GameCell {
     this.wait = true
 
     setTimeout(() => { // отпускаем поток UI
-      if (beforeClick) beforeClick()
+      if (beforeClick) beforeClick(this)
       this.game.receive({sender: this.DTO, act: 'click'})
-      if (afterClick) afterClick()
+      if (afterClick) afterClick(this)
     })
   }
 

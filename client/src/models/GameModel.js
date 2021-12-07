@@ -1,13 +1,18 @@
 import { tempid } from '../utils/funcs'
-import { Box } from "grommet"
+import { Box, Button } from "grommet"
 import GameCell from './GameCell'
 import UserModel from './UserModel'
 import { observer } from "mobx-react-lite"
 import { makeObservable, observable, runInAction, action, computed } from "mobx"
 import switAPI from '../API'
+import ButtonModel from './ButtonModel'
+import UserAvatar from "../components/UserAvatar"
+import StatusModel from './StatusModel'
+import { isString } from '../utils/funcs'
+
 
 /*
-Шаблон-демо модели
+Инфраструктурный класс игры
 
 Компоненты для отображения игры содержаться в модели игры
 В общем случае - каждая игра имеет ункальные элементы отображения, и одинакова только схема отображения:
@@ -23,31 +28,128 @@ export default class GameModel {
   id
   cells
 
-  status = 'none' // play, pause, finish
+  status = 'ready' // ready, play, pause, finish
+  allStatuses
 
   userTop
   userBottom
 
   wait = false
 
+  activeButtons
+
+  allButtons
+  toolBars
+
   constructor(id) {
     this.id = id || tempid('g')
 
     this.cells = Object.create(null)
 
-    this.userTop = new UserModel({nickname: 'bot Top'})
-    this.userBottom = new UserModel({nickname: 'bot Bottom'})
+    this.userTop = new UserModel({nickname: 'Foo Top'})
+    this.userBottom = new UserModel({nickname: 'Bar Bottom'})
+
+    this.allStatuses = Object.create(null)
+    this.allButtons = Object.create(null)
+
+    this.activeButton = Object.create(null)
+
+    this._initButtons()
+    this._initStatuses()
 
     switAPI().subscribe('game', this.id, impact => this.receive(impact))
 
     makeObservable(this, {
       status: observable,
+      infoLine: computed,
+      setStatus: action,
       wait: observable,
-      statusName: computed
+      activeButtons: observable
     })
   }
 
+  _initButtons() {
+
+    const game = this
+
+    function statusNext(args) { // только отослыем запрос на изменение статуса
+
+      let newStatus = args || game.status.nextStatus
+
+      game.wait = true
+
+      switAPI().dispatch({
+        sender: game.DTO,
+        act: 'status-new',
+        actData: newStatus
+      })
+    }
+
+    this.allButtons['play'] = new ButtonModel('play', 'Старт', args => {
+      statusNext('play')
+    })
+    this.allButtons['finish'] = new ButtonModel('finish', 'Завершить', args => {
+      statusNext('finish')
+    })
+    this.allButtons['ready'] = new ButtonModel('ready', 'Очистить', args => {
+      statusNext('ready')
+    })
+
+    game.toolBars = {
+      play: [game.allButtons['finish']],
+      finish: [game.allButtons['ready']],
+      ready: [game.allButtons['play']],
+    }
+
+    game.activeButtons = game.toolBars['ready']
+  }
+
+  _initStatuses() {
+    const game = this
+
+    game.allStatuses['ready'] = new StatusModel('ready', 'play', 'Готова', 'Игра в ожидании начала', {act: 'clear'})
+    game.allStatuses['play'] = new StatusModel('play', 'finish', 'Идет', 'Идет игра', {act: 'play'})
+    game.allStatuses['finish'] = new StatusModel('finish', 'ready', 'Завершена', 'Игра завершена', {act: 'finish'})
+
+    game.status = game.allStatuses['ready']
+  }
+
+  _sendToAllCells(impact) {
+    this.arrCells.forEach(eachCell => {
+      eachCell.receive({...impact, id: eachCell.id})
+    })
+  }
+
+  setStatus(status) {
+    if (!status) throw 'Unknown setStatus'
+
+    if (isString(status)) status = this.allStatuses[status]
+
+    this.status = status;
+    this.activeButtons = this.toolBars[status.id]
+
+    this._sendToAllCells(status.impactData)
+
+    this.wait = status.id != 'play'
+  }
+
+  /**
+  * Инициализует пустую игру
+  * @returns {this}
+  */
+   initEmpty() {
+    for (let iii=5; iii>0; --iii) {
+      let tCell = new GameCell(null, this)
+      this.cells[tCell.id] = tCell
+    }
+
+    return this
+  }
+
   // * * * Public
+  get arrCells() {
+    return Object.values(this.cells)
+  }
 
   /**
    *
@@ -55,7 +157,7 @@ export default class GameModel {
    * @returns {void}
    */
    receive(impact) {
-    if (Array.isArray(impact)) {
+    if (Array.isArray(impact)) { // распаковываем массив
       for(let eachImpact of impact) this.receive(eachImpact)
       return
     }
@@ -70,11 +172,10 @@ export default class GameModel {
       return;
     }
 
-    runInAction(() => {
-      if (impact.wait || impact.wait === false) {
+    if (impact.wait || impact.wait === false) // пришло изменение ожидания игры
+      runInAction(() => {
         this.wait = impact.wait
-      }
-    })
+      })
 
     if (impact?.receiver?.kind == 'board') {
       this.receiveBoard(impact)
@@ -111,14 +212,14 @@ export default class GameModel {
     }
 
     if (impact.sender.kind == 'button') {
-      // TODO отправить на сервер
+      // TODO отправить на сервер желаемое пользователем действие
     }
   }
 
   receiveGame(impact) {
-    runInAction(() => {
-      if (impact.status) this.status = impact.status
-    })
+    console.log('receiveGame',impact)
+
+    if (impact.act == 'status-new') this.setStatus(impact.actData || impact.status || impact.act)
 
     if (impact.cells) this.receiveBoard(impact)
   }
@@ -154,32 +255,16 @@ export default class GameModel {
     }
   }
 
-  statusNext(args) {
-
-    let newStatus = this.status
-
-    switch (this.status) {
-      case 'play':
-        newStatus = 'pause'
-        break;
-      case 'pause':
-        newStatus = 'play'
-        break;
-      case 'finish':
-        newStatus = null
-        break;
-      default:
-        newStatus = 'play'
-      }
-
-    switAPI().dispatch({
-      sender: this.DTO,
-      act: newStatus
-    })
+  /**
+   * DELETE
+   * @returns {Object} newStatus:
+   */
+  get statusInfo() {
+    return this.statuses[this.status] || this.statuses.default
   }
 
-  get statusName() {
-    return this.status || 'Старт'
+  get infoLine() {
+    return this.status.statusLine + " " + (this.info || "")
   }
 
   /**
@@ -200,42 +285,42 @@ export default class GameModel {
   return () => {
     return (
       <Box>
-        <GameBoardHead/>
-        <GBoard />
-        <GameBoardFooter />
+        <GameBoardHead game={game}/>
+        <GBoard game={game}/>
+        <GameBoardFooter game={game}/>
       </Box>
     )
   }
 }
 
-  /**
-  * Инициализует пустую игру
-  * @returns {this}
-  */
-  initEmpty() {
-    for (let iii=5; iii>0; --iii) {
-      let tCell = new GameCell(null, this)
-      this.cells[tCell.id] = tCell
-    }
+emptyBoard() {
+  return 'emptyBoard ' + this.id
+}
 
-    return this
-  }
+// *** React function components
 
-  emptyBoard() {
-    return 'emptyBoard ' + this.id
-  }
+/** @protected */
+GameBoardHead(args) {
+  if (args != 'big') return () => {return (<div>Foo vs Bar</div>)}
 
-  // *** React function components
+  return observer( ({game}) => {
 
-  /** @protected */
-  GameBoardHead(args) {
-    if (args != 'big') return () => {return (<div>Foo vs Bar</div>)}
+    const buttons = game.activeButtons || []
 
-    return () => {
-      return (
-        <Box>Tool Bar GArea</Box>
-      )
-    }
+    return (
+      <Box>
+      <Box direction="row">
+        <UserPlay user={game.userTop}/>&nbsp;
+        <UserPlay user={game.userBottom}/>
+      </Box>
+      <Box direction="row">
+        {buttons.map( bt =>
+          <Button key={bt.id} margin={bt.margin} hoverIndicator={bt.hoverIndicator} pad="xsmall" onClick={e => bt.actClick()} label={bt.label}/>
+        )}
+      </Box>
+      </Box>
+    )
+  })
   }
 
   /** @protected */
@@ -251,11 +336,11 @@ export default class GameModel {
 
   /** @protected */
   GameBoard(args) {
-    let game = this
 
-    const GCell = game.GameCell()
+    const GCell = this.GameCell()
 
-    return () => {
+    return ({game}) => {
+
       return (
         <Box>
           {Object.entries(game.cells).map(([cellID, cell]) =>
@@ -268,14 +353,25 @@ export default class GameModel {
 
   /** @protected */
   GameBoardFooter(args) {
-    let game = this
+    // let game = this
 
-    if (args != 'big') return observer(() => {return (<div>&#10148; {game.status}</div>)})
+    if (args != 'big') return observer(({game}) => {return (<div>&#10148; {game.status.id || game.status}</div>)})
 
-    return () => {
+    return observer(({game}) => {
       return (
-        <Box>Footer GArea</Box>
+        <Box>{game.infoLine}</Box>
       )
-    }
+    })
   }
+}
+
+var UserPlay = ({user}) => {
+
+  if (user === undefined) return (<div>user is undefined</div>)
+
+  return (
+    <div>
+      <UserAvatar user={user} mode="game-board"/>
+    </div>
+  )
 }

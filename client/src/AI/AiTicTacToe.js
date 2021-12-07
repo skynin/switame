@@ -2,22 +2,36 @@ import { randomInt } from "../utils/funcs"
 
 export default class AiTicTacToe {
 
+  /**
+   * Эта логика будет продублирована на сервере, поэтому нельзя брать GameStatuses
+   * @param {*} impact
+   * @returns
+   */
   gameState(impact) {
     let result = [{receiver: {kind: 'game'}, wait: false}]
 
-    if (impact.act == 'play') {
-      switch (impact.sender.status) {
-        case 'none':
-          result[0].status = 'play'
+    if (impact.act == 'status-new') {
+
+      result[0].act = impact.act
+
+      switch (impact.actData) {
+        case 'ready':
+          result[0].actData = 'ready'
+          break;
+        case 'play':
+          result[0].actData = 'play'
           result = result.concat(this.botStep(impact))
           break;
+        case 'finish':
+          result[0].actData = 'finish'
+          break;
         default:
-          console.log('TODO', impact.sender.status, impact)
+          console.log('TODO status-new', impact.sender.status, impact)
           result[0].status = impact.act
         }
       }
     else {
-      console.log('TODO', impact.act, impact)
+      console.log('TODO act', impact.act, impact)
       result[0].status = impact.act
     }
 
