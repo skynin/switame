@@ -19,7 +19,7 @@ const AboutPage = () => {
       <p>Поиск партнера для игры и согласование времени в онлайн - в разработке</p>
       <p>А в далеком будущем - организация турниров как по отдельной игре, так и многоборья</p>
       <hr/>
-      <p>Наиболее полная коллекция игр где можно поиграть с ИИ: <a href="https://ludii.games/" target="_blank">Ludii Portal</a> </p>
+      <p>Большая коллекция игр где можно поиграть с ИИ: <a href="https://ludii.games/" target="_blank">Ludii Portal</a> </p>
       <p>Хороший YouTube канал коллекционера игр <a href="https://www.youtube.com/channel/UCI93THhcjKbv2d5GCXODViQ" target="_blank">Виталия Потопахина</a></p>
       <hr/>
       <p><a href="https://github.com/skynin/switame" target="_blank">GitHub</a></p>

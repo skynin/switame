@@ -6,19 +6,9 @@ function createAvatarId(id, authId) {
   return MD5(id + authId)
 }
 
-function initNewUser(obj) {
-  obj.id = nanoid()
-  obj.authId = nanoid()
-  obj.avatarType = 'wavatar'
-  obj.avatarId = createAvatarId(obj.id, obj.authId)
-  obj.nickname = 'fooname123'
-
-  obj.isAuth = false
-}
-
 export default class UserModel {
   constructor(args) {
-    initNewUser(this)
+    this._initNewUser()
 
     if (args) {
       const {nickname} = args
@@ -33,6 +23,16 @@ export default class UserModel {
       isAuth: observable,
       updateFrom: action
   })
+  }
+
+  _initNewUser() {
+    this.id = nanoid()
+    this.authId = nanoid()
+    this.avatarType = 'wavatar'
+    this.avatarId = createAvatarId(this.id, this.authId)
+    this.nickname = 'fooname123'
+
+    this.isAuth = false
   }
 
   updateFrom(obj) {
@@ -74,7 +74,7 @@ export default class UserModel {
 
     localStorage.removeItem('currUser')
     runInAction(() => {
-      initNewUser(this)
+      this._initNewUser()
     })
   }
 

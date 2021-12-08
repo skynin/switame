@@ -35,6 +35,7 @@ export default class GameModel {
   userBottom
 
   wait = false
+  info = null
 
   activeButtons
 
@@ -61,6 +62,7 @@ export default class GameModel {
 
     makeObservable(this, {
       status: observable,
+      info: observable,
       infoLine: computed,
       setStatus: action,
       wait: observable,
@@ -77,6 +79,7 @@ export default class GameModel {
       let newStatus = args || game.status.nextStatus
 
       game.wait = true
+      game.info = 'Ожидание подтверждения'
 
       switAPI().dispatch({
         sender: game.DTO,
@@ -131,6 +134,10 @@ export default class GameModel {
     this._sendToAllCells(status.impactData)
 
     this.wait = status.id != 'play'
+    switch(status.id) {
+      case 'ready': this.info = null; break;
+      case 'finish': this.info = 'Игра завершена'; break;
+    }
   }
 
   /**
@@ -201,6 +208,7 @@ export default class GameModel {
 
       runInAction(()=>{
         this.wait = tempid('sg') // для идентификации ответа
+        this.info = 'Ждем ответа...'
       })
 
       // отправить на сервер
@@ -226,10 +234,14 @@ export default class GameModel {
 
   receiveBoard(impact) {
     try {
-
       console.log('receiveBoard',impact)
 
       if (impact.cells) {
+
+      runInAction(()=>{
+        this.info = impact.info || 'Ваш ход'
+      })
+
       // изменение клеток доски
       // пройтись по всем клеткам и изменить
       for (let eachCell of impact.cells) {
@@ -255,16 +267,8 @@ export default class GameModel {
     }
   }
 
-  /**
-   * DELETE
-   * @returns {Object} newStatus:
-   */
-  get statusInfo() {
-    return this.statuses[this.status] || this.statuses.default
-  }
-
   get infoLine() {
-    return this.status.statusLine + " " + (this.info || "")
+    return this.info || this.status.statusLine
   }
 
   /**

@@ -8,34 +8,6 @@ import { runInAction } from "mobx"
 import { useEffect } from "react"
 import { useChatStore } from ".."
 
-const UserPlay = ({user}) => {
-  return (
-    <div>
-      <UserAvatar user={user} mode="game-board"/>
-    </div>
-  )
-}
-
-const delete_ButtonPlay = observer(({game}) => {
-
-  function click() {
-    game.statusNext()
-  }
-
-  const chatStore = useChatStore()
-
-  useEffect(() => {
-    if (game.info) {
-      chatStore.pushMessage(game.info, game.id)
-      game.info = null
-    }
-  })
-
-  return (
-    <Button margin="small" hoverIndicator={true} pad="xsmall" onClick={e => click()} label={game.statusNextName}/>
-  )
-})
-
 export default class TicTacToe extends GameModel {
 
   constructor(id) {
@@ -62,35 +34,6 @@ export default class TicTacToe extends GameModel {
   }
 
   // *** React components
-
-  delete_GameBoardHead(args) {
-    const game = this
-
-    return observer(() => {
-    return (
-      <div>
-        <Box direction="row">
-          <UserPlay user={game.userTop}/>&nbsp;
-          <UserPlay user={game.userBottom}/>
-        </Box>
-        <Box direction="row"><ButtonPlay game={game}/></Box>
-      </div>
-    )})
-  }
-
-  delete_GameBoardFooter(args) {
-    const game = this
-
-    return observer(() => {
-
-    const gameStatus = game.statusLine != 'none' ? game.status : 'Инфа о ходе игры'
-
-    return (
-      <div>
-        <Box>{gameStatus}</Box>
-      </div>
-    )})
-  }
 
   /**
    * Ячейки доски нумеруются - колонка строка
