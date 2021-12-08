@@ -10,8 +10,7 @@ export default class AiTicTacToe {
   botIntellect = 20
   boardSize = 9
 
-  // Мэрилин вос Савант С 1986 по 1989 год входила в Книгу рекордов Гиннесса как человек с самым большим IQ в мире — 186
-  maxHumanIQ = 186
+  maxHumanIQ = 144 // 0,2% людей
   avgHumanIQ = 110 // – это средний уровень IQ,
 
   winnerCellID = '22'
@@ -234,8 +233,6 @@ export default class AiTicTacToe {
   // ход бота
   botStep(boardCells) {
 
-    if (this.botIntellect > this.maxHumanIQ) this.botIntellect = this.maxHumanIQ - this.boardSize
-
     let result = {receiver: {kind: 'board'}, cells: false, wait: true}
 
     // console.log('botStep',boardCells)
@@ -275,7 +272,10 @@ export default class AiTicTacToe {
       let iii = randomInt(0, freeCells.length-1)
       let newCell = freeCells[iii]
 
-      if (this.botIntellect > this.avgHumanIQ && newCell.id != this.winnerCellID && randomInt(0,1) == 0) { // умный бот пробует использовать центр
+      if (newCell.id != this.winnerCellID &&
+        ( this.botIntellect > this.maxHumanIQ ||
+          (this.botIntellect > this.avgHumanIQ && randomInt(0,2) < 2)
+        )) { // умный бот пробует использовать центр
         let magicCell = freeCells.find(cell => cell.id == this.winnerCellID)
         if (magicCell) newCell = magicCell
       }
