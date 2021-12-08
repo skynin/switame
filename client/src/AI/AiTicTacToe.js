@@ -4,6 +4,18 @@ export default class AiTicTacToe {
 
   winnerLines
 
+  // Люди с тяжелой формой умственной отсталости не поддаются обучению и воспитанию,
+  // имеют уровень интеллектуального развития до 20 баллов. Они находятся под опекой других людей,
+  // так как не могут о себе позаботиться, и живут в собственном мире. Таких людей в мире 0,2 %.
+  botIntellect = 20
+  boardSize = 9
+
+  // Мэрилин вос Савант С 1986 по 1989 год входила в Книгу рекордов Гиннесса как человек с самым большим IQ в мире — 186
+  maxHumanIQ = 186
+  avgHumanIQ = 110 // – это средний уровень IQ,
+
+  winnerCellID = '22'
+
   constructor() {
     this.winnerLines = this._initWinnerLines()
   }
@@ -43,7 +55,7 @@ export default class AiTicTacToe {
           break;
         case 'play':
           result[0].actData = 'play'
-          result = result.concat(this.botStep(impact))
+          result = result.concat(this.botStep(impact.sender.cells))
           break;
         case 'finish':
           result[0].actData = 'finish'
@@ -100,16 +112,22 @@ export default class AiTicTacToe {
         canBotStep = false
       }
 
+      if (manCell==this.winnerCellID) this.botIntellect += this.boardSize // бот быстро смекает что центральная клетка выгодная
+
       dispatcher(result)
 
       if (winnerResult) {
         this.dispatchFinish(winnerResult, dispatcher)
+        this.botIntellect += 4 // бот быстро учится на ошибках
       }
       else if (canBotStep) setTimeout(() => {
-        let fullResult = this.botStep(impact, manCell)
+        let fullResult = this.botStep(resultCells)
         dispatcher(fullResult);
         winnerResult = this.checkWin(resultCells, fullResult[0].cells)
-        if (winnerResult) this.dispatchFinish(winnerResult, dispatcher)
+        if (winnerResult) {
+          this.dispatchFinish(winnerResult, dispatcher, `; IQ бота ${this.botIntellect}`)
+          this.botIntellect -= 2 // головокружение от успеха
+        }
       })
     }
 
@@ -118,13 +136,11 @@ export default class AiTicTacToe {
 
   // создаем новое расположение фишек на поле
   mergeCells(origCells, newCells) {
-
-    console.log('mergeCells <=',origCells, newCells)
-
+    // console.log('mergeCells <=',origCells, newCells)
     let resultCells = origCells.map(cell =>
       newCells.find(c => c.id == cell.id) || cell
     )
-    console.log('mergeCells =>',origCells, resultCells)
+    // console.log('mergeCells =>',origCells, resultCells)
     return resultCells
   }
 
@@ -179,7 +195,7 @@ export default class AiTicTacToe {
   }
 
   // проверка победы или ничьи
-  dispatchFinish(winnerResult, dispatcher) {
+  dispatchFinish(winnerResult, dispatcher, extInfo='') {
 
     let sendImpact = {
       act: 'status-new',
@@ -193,8 +209,9 @@ export default class AiTicTacToe {
     const [oneWinLine, winCell, checkedCells] = winnerResult
 
     if (isString(oneWinLine)) {
-      sendImpact.info = oneWinLine
+      sendImpact.info = oneWinLine + extInfo
       dispatcher(sendImpact)
+      --this.botIntellect // бот дает фору
       return
     }
 
@@ -210,20 +227,60 @@ export default class AiTicTacToe {
     dispatcher(result)
 
     // завершить игру
-    sendImpact.info = 'FINAL Победили ' + winCell.chip
+    sendImpact.info = 'FINAL Победили ' + winCell.chip + extInfo
     dispatcher(sendImpact)
   }
 
   // ход бота
-  botStep(impact, manCell) {
-    let result = {receiver: {kind: 'board'}, cells: [], wait: true}
+  botStep(boardCells) {
 
-    let board = impact.sender.cells
-    let freeCells = board.filter(eachCell => eachCell.chip == 'chip' && eachCell.id != manCell)
+    if (this.botIntellect > this.maxHumanIQ) this.botIntellect = this.maxHumanIQ - this.boardSize
 
+    let result = {receiver: {kind: 'board'}, cells: false, wait: true}
+
+    // console.log('botStep',boardCells)
+
+    let freeCells = boardCells.filter(eachCell => eachCell.chip == 'chip')
+
+    // ищем свой выигрышный ход
+    // Уровень IQ от 21 до 50 https://brainapps.ru/blog/2015/08/urovni-znacheniy-iq-i-ikh-rasshifrovka/
+    // около 2% людей - слабоумие, способны позаботиться о себе, обычно имеют опекунов
+    if (this.botIntellect > 50 || randomInt(0,50) <= this.botIntellect) {
+      for (let nCell of freeCells) {
+        let tCells = [{...nCell, chip: 'X', info: `bot походил ${nCell.id}`}]
+
+        if (this.checkWin(boardCells, tCells)) {
+          result.cells = tCells
+          return [result, {receiver: {kind: 'board'}, wait: false}]
+        }
+      }
+    }
+
+    // ищем чужой выигрышный ход, если интеллекта хватает
+    if (randomInt(51,this.maxHumanIQ) <= this.botIntellect) {
+      for (let nCell of freeCells) {
+        let tCells = [{...nCell, chip: 'O', info: `user походил ${nCell.id}`}]
+
+        if (this.checkWin(boardCells, tCells)) {
+          result.cells = [{...nCell, chip: 'X', info: `bot походил ${nCell.id}`}]
+          return [result, {receiver: {kind: 'board'}, wait: false}]
+        }
+      }
+    }
+
+    // случайный выбор
     if (freeCells.length) {
+      if (freeCells.length < (this.boardSize-2) && freeCells.length > 1) ++this.botIntellect; // интеллект бота растет
+
       let iii = randomInt(0, freeCells.length-1)
       let newCell = freeCells[iii]
+
+      if (this.botIntellect > this.avgHumanIQ && newCell.id != this.winnerCellID && randomInt(0,1) == 0) { // умный бот пробует использовать центр
+        let magicCell = freeCells.find(cell => cell.id == this.winnerCellID)
+        if (magicCell) newCell = magicCell
+      }
+
+      if (newCell.id == this.winnerCellID) --this.botIntellect // мягко наказываем бота за использование центральной клетки
       result.cells = [{id: newCell.id, chip: 'X', info: `bot походил ${newCell.id}`}]
     }
 
