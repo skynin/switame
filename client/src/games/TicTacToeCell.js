@@ -36,8 +36,10 @@ const uniRender = observer ( ({cell}) => {
     }
   })
 
+  let winEffect = cell.effect == 'WIN' ? 'accent-1' : ''
+
   return (
-    <Box border="all" align="center" justify="center" onClick={e => clickCell() }>
+    <Box border="all" background={winEffect} align="center" justify="center" onClick={e => clickCell() }>
       <CellShow chip={cell.chip} wait={cell.wait}/>
     </Box>
   )

@@ -229,6 +229,12 @@ export default class GameModel {
 
     if (impact.act == 'status-new') this.setStatus(impact.actData || impact.status || impact.act)
 
+    if (impact.info) {
+      runInAction(() => {
+        this.info = impact.info
+      })
+    }
+
     if (impact.cells) this.receiveBoard(impact)
   }
 
@@ -261,7 +267,7 @@ export default class GameModel {
     return {
       id: this.id,
       kind: 'game',
-      status: this.status,
+      status: this.status.id,
       wait: this.wait,
       cells
     }
@@ -331,7 +337,7 @@ GameBoardHead(args) {
   GameCell() {
     return observer( ({cell}) => {
       return (
-        <Box border={cell.effect.indexOf('last') >= 0 ? 'all' : false}>
+        <Box border={cell.effect && cell.effect.indexOf('last') >= 0 ? 'all' : false}>
           {cell.id} : {cell.chip} - {cell.brim}
         </Box>
       )

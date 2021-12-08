@@ -12,8 +12,8 @@ export default class GameCell {
   chip
   brim
   wait = false
-  info
-  effect
+  info = null
+  effect = null
 
   constructor(id, game, {brim='brim', chip='chip', wait=false} = {}) {
     this.id = id || tempid('c')
@@ -22,7 +22,7 @@ export default class GameCell {
     this.chip = chip
     this.brim = brim
     this.wait = wait
-    this.effect = ""
+    this.effect = null
 
     this.receivedCell = ['wait','chip','brim','info','effect']
 
@@ -40,7 +40,7 @@ export default class GameCell {
     this.chip = 'chip'
     this.brim = 'brim'
     this.info = null
-    this.effect = ""
+    this.effect = null
 }
 
   receive(impact) {
