@@ -14,7 +14,7 @@ const MainPage = () => {
   useEffect(() => {
     chatStore.setCurrentGameId(game.id)
     return () => chatStore.setCurrentGameId(0)
-  },[])
+  },[game.id])
 
   return (
     <div>

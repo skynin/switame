@@ -33,19 +33,25 @@ export default class ChatStore {
 
     gameId = gameId || this.currentGameId;
 
+    if (message == '_clear') {
+      this.messages.set(gameId, [])
+      return
+    }
+
     let arrM = this.messages.get(gameId) || [];
     arrM.push({id: tempid('h'), message})
 
     if (arrM.length > 99) arrM = arrM.slice(-99)
 
-    if (message == '_clear') arrM = []
-
     this.messages.set(gameId, arrM)
   }
 
-  readMessages(gameId) {
+  readMessages(gameId, order) {
     let arrM = this.messages.get(gameId || this.currentGameId) || []
 
-    return arrM.slice(-33)
+    let result = arrM.slice(-33)
+    if (order == 'reverse') result.reverse()
+
+    return result
   }
 }

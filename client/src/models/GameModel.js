@@ -37,6 +37,8 @@ export default class GameModel {
   wait = false
   info = null
 
+  count = 0
+
   activeButtons
 
   allButtons
@@ -162,6 +164,11 @@ export default class GameModel {
         this.showWinner(info)
       break;
       case 'play':
+
+        ++this.count
+
+        useChatStore().pushMessage(`Игра № ${this.count}`, this.id)
+
         if (this.userTop.isBot) { // передаем право первого хода
           switAPI().dispatch({
             sender: this.DTO,
@@ -347,7 +354,7 @@ export default class GameModel {
 
   return () => {
     return (
-      <Box>
+      <Box align="center">
         <GameBoardHead game={game}/>
         <GBoard game={game}/>
         <GameBoardFooter game={game}/>
@@ -371,7 +378,7 @@ GameBoardHead(args) {
     const buttons = game.activeButtons || []
 
     return (
-      <Box>
+      <Box align="center">
       <Box direction="row">
         <UserPlay user={game.userTop}/>&nbsp;
         <UserPlay user={game.userBottom}/>

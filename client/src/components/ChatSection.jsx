@@ -2,13 +2,14 @@ import { Box, Button, InfiniteScroll, Text, TextArea, TextInput } from 'grommet'
 import { useChatStore } from '..';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
+import { isMobile } from 'react-device-detect'
 
 const ListMessages = observer( ({list}) => {
 
   let lastRef = useRef()
 
   useEffect(() => {
-      lastRef?.current?.scrollIntoView()
+      if ( !isMobile ) lastRef?.current?.scrollIntoView()
   })
 
   function divOne(item) {
@@ -53,6 +54,15 @@ const InputMessage = () => {
 }
 
 const ChatSection = observer( ({chat}) => {
+
+  if ( isMobile )
+  return (
+    <Box background="light-2">
+      <InputMessage/>
+      <ListMessages list={chat.readMessages(null, 'reverse')}/>
+    </Box>
+  )
+
   return (
     <Box background="light-2">
       <ListMessages list={chat.readMessages()}/>

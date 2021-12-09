@@ -23,7 +23,7 @@ export default class AiTicTacToe {
   boardSize = 9
 
   maxHumanIQ = 144 // 0,2% людей
-  avgHumanIQ = 110 // это средний уровень IQ
+  avgHumanIQ = 90 // это средний уровень IQ
 
   winnerCellID = '22'
 
@@ -77,7 +77,7 @@ export default class AiTicTacToe {
         }
       }
     else if (impact.act == 'step') {
-      if (this.botIntellect > this.avgHumanIQ) { // шибко умный, для первого хода
+      if (randomInt(this.avgHumanIQ, this.maxHumanIQ) < this.botIntellect) { // шибко умный стал
         let extraIQ = Math.floor(Math.log(3 + this.botIntellect - this.avgHumanIQ) / Math.log(1.2))
         this.botIntellect = this.avgHumanIQ + extraIQ
       }
@@ -136,13 +136,13 @@ export default class AiTicTacToe {
         canBotStep = false
       }
 
-      if (manCell==this.winnerCellID) this.botIntellect += 6 // бот быстро смекает что центральная клетка выгодная
+      if (manCell==this.winnerCellID) this.botIntellect += 4 // бот быстро смекает что центральная клетка выгодная
 
       dispatcher(result)
 
       if (winnerResult) {
         this.dispatchFinish(winnerResult, dispatcher)
-        this.botIntellect += 4 // бот учится на ошибках
+        this.botIntellect += 6 // бот учится на ошибках
       }
       else if (canBotStep) setTimeout(() => {
         let fullResult = this.botStep(resultCells)
@@ -287,7 +287,7 @@ export default class AiTicTacToe {
     }
 
     // ищем чужой выигрышный ход, если интеллекта хватает
-    if (randomInt(51,this.avgHumanIQ) < this.botIntellect) {
+    if (this.botIntellect > this.avgHumanIQ || randomInt(51,this.avgHumanIQ) < this.botIntellect) {
       for (let nCell of freeCells) {
         let tCells = [{...nCell, chip: this.userChip, info: `user походил ${nCell.id}`}]
 
@@ -308,7 +308,7 @@ export default class AiTicTacToe {
       if (winnerCell && randomInt(0,this.avgHumanIQ) < this.botIntellect) { // смышленый бот пробует использовать центр
         newCell = winnerCell
       }
-      else if (randomInt(51,this.maxHumanIQ) < this.botIntellect) { // умный бот ходит в угол или в центр
+      else if (randomInt(0,this.maxHumanIQ) < this.botIntellect) { // умный бот ходит в угол или в центр
         let cornerCells = freeCells.filter(fCell => ['11','13','31','33',this.winnerCellID].includes(fCell.id))
         let iii = randomInt(0, cornerCells.length-1)
         newCell = cornerCells[iii]
