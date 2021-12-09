@@ -21,12 +21,7 @@ const uniRender = observer ( ({cell}) => {
   const chatStore = useChatStore()
 
   const clickCell = () => {
-      cell.click(null,() => {
-        const timeElapsed = Date.now();
-        const today = new Date(timeElapsed);
-
-        chatStore.pushMessage('click '+ today.toISOString(), cell.game.id)
-        })
+      cell.click()
     }
 
   useEffect(() => {
@@ -34,7 +29,7 @@ const uniRender = observer ( ({cell}) => {
       chatStore.pushMessage(cell.info, cell.game.id)
       cell.info = null
     }
-  })
+  },[cell.info])
 
   let winEffect = cell.effect == 'WIN' ? 'accent-1' : ''
 

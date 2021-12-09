@@ -1,4 +1,16 @@
-import { isString, randomInt } from "../utils/funcs"
+import { isString, randomInt, shuffleArray } from "../utils/funcs"
+
+class InfoData {
+  winner = '?'
+  info = ''
+
+  toString() {
+    if (this.winner && this.winner != '?')
+      return `Итог: ${this.winner} победили ${this.info}`
+
+    return `Итог: ${this.info}`
+  }
+}
 
 export default class AiTicTacToe {
 
@@ -11,7 +23,7 @@ export default class AiTicTacToe {
   boardSize = 9
 
   maxHumanIQ = 144 // 0,2% людей
-  avgHumanIQ = 110 // – это средний уровень IQ,
+  avgHumanIQ = 110 // это средний уровень IQ
 
   winnerCellID = '22'
 
@@ -53,8 +65,8 @@ export default class AiTicTacToe {
           result[0].actData = 'ready'
           break;
         case 'play':
+          this.botChip = 'O'
           result[0].actData = 'play'
-          result = result.concat(this.botStep(impact.sender.cells))
           break;
         case 'finish':
           result[0].actData = 'finish'
@@ -64,12 +76,25 @@ export default class AiTicTacToe {
           result[0].status = impact.act
         }
       }
+    else if (impact.act == 'step') {
+      if (this.botIntellect > this.avgHumanIQ) { // шибко умный, для первого хода
+        let extraAQ = Math.floor(Math.log(3 + this.botIntellect - this.avgHumanIQ) / Math.log(1.2))
+        this.botIntellect = this.avgHumanIQ + extraAQ
+      }
+
+      this.botChip = 'X'
+      result = this.botStep(impact.sender.cells)
+    }
     else {
       console.log('TODO act', impact.act, impact)
       result[0].status = impact.act
     }
 
     return result
+  }
+
+  get userChip() {
+    return this.botChip == 'X' ? 'O' : 'X'
   }
 
   thinkIt(impact, dispatcher) {
@@ -99,7 +124,7 @@ export default class AiTicTacToe {
       let canBotStep = true
 
       if (cell.chip == 'chip') {
-        let tCells = {id: manCell, chip: 'O', info: `user походил ${manCell}` }
+        let tCells = {id: manCell, chip: this.userChip, info: `user походил ${manCell}` }
         result.cells.push(tCells)
         resultCells = this.mergeCells(origCells, result.cells)
         winnerResult = this.checkWin(origCells, result.cells)
@@ -111,13 +136,13 @@ export default class AiTicTacToe {
         canBotStep = false
       }
 
-      if (manCell==this.winnerCellID) this.botIntellect += this.boardSize // бот быстро смекает что центральная клетка выгодная
+      if (manCell==this.winnerCellID) this.botIntellect += 6 // бот быстро смекает что центральная клетка выгодная
 
       dispatcher(result)
 
       if (winnerResult) {
         this.dispatchFinish(winnerResult, dispatcher)
-        this.botIntellect += 4 // бот быстро учится на ошибках
+        this.botIntellect += 4 // бот учится на ошибках
       }
       else if (canBotStep) setTimeout(() => {
         let fullResult = this.botStep(resultCells)
@@ -130,7 +155,7 @@ export default class AiTicTacToe {
       })
     }
 
-    setTimeout(calcMotion, 100)
+    setTimeout(calcMotion)
   }
 
   // создаем новое расположение фишек на поле
@@ -186,7 +211,7 @@ export default class AiTicTacToe {
     }
     else {  // проверяем на ничью
       if (resultCells.every(cell => cell.chip != 'chip')) {
-        return ['FINAL ничья']
+        return ['ничья']
       }
     }
 
@@ -207,9 +232,14 @@ export default class AiTicTacToe {
 
     const [oneWinLine, winCell, checkedCells] = winnerResult
 
-    if (isString(oneWinLine)) {
-      sendImpact.info = oneWinLine + extInfo
+    let infoData = new InfoData()
+
+    if (isString(oneWinLine)) { // ничья
+      infoData.winner = '?'
+      infoData.info = oneWinLine + extInfo
+      sendImpact.info = infoData
       dispatcher(sendImpact)
+
       --this.botIntellect // бот дает фору
       return
     }
@@ -219,14 +249,15 @@ export default class AiTicTacToe {
       cell.effect = 'WIN'
     });
 
-    // winCell.effect =
-
     // отослать
     let result = {receiver: {kind: 'board'}, cells: checkedCells}
     dispatcher(result)
 
     // завершить игру
-    sendImpact.info = 'FINAL Победили ' + winCell.chip + extInfo
+    infoData.winner = winCell.chip
+    infoData.info = extInfo
+    sendImpact.info = infoData
+
     dispatcher(sendImpact)
   }
 
@@ -239,12 +270,14 @@ export default class AiTicTacToe {
 
     let freeCells = boardCells.filter(eachCell => eachCell.chip == 'chip')
 
+    if (freeCells.length > 3) shuffleArray(freeCells)
+
     // ищем свой выигрышный ход
     // Уровень IQ от 21 до 50 https://brainapps.ru/blog/2015/08/urovni-znacheniy-iq-i-ikh-rasshifrovka/
     // около 2% людей - слабоумие, способны позаботиться о себе, обычно имеют опекунов
-    if (this.botIntellect > 50 || randomInt(0,50) <= this.botIntellect) {
+    if (this.botIntellect > 50 || randomInt(0,50) < this.botIntellect) {
       for (let nCell of freeCells) {
-        let tCells = [{...nCell, chip: 'X', info: `bot походил ${nCell.id}`}]
+        let tCells = [{...nCell, chip: this.botChip, info: `bot походил ${nCell.id}`}]
 
         if (this.checkWin(boardCells, tCells)) {
           result.cells = tCells
@@ -254,12 +287,12 @@ export default class AiTicTacToe {
     }
 
     // ищем чужой выигрышный ход, если интеллекта хватает
-    if (randomInt(51,this.maxHumanIQ) <= this.botIntellect) {
+    if (randomInt(51,this.avgHumanIQ) < this.botIntellect) {
       for (let nCell of freeCells) {
-        let tCells = [{...nCell, chip: 'O', info: `user походил ${nCell.id}`}]
+        let tCells = [{...nCell, chip: this.userChip, info: `user походил ${nCell.id}`}]
 
         if (this.checkWin(boardCells, tCells)) {
-          result.cells = [{...nCell, chip: 'X', info: `bot походил ${nCell.id}`}]
+          result.cells = [{...nCell, chip: this.botChip, info: `bot походил ${nCell.id}`}]
           return [result, {receiver: {kind: 'board'}, wait: false}]
         }
       }
@@ -269,19 +302,26 @@ export default class AiTicTacToe {
     if (freeCells.length) {
       if (freeCells.length < (this.boardSize-2) && freeCells.length > 1) ++this.botIntellect; // интеллект бота растет
 
-      let iii = randomInt(0, freeCells.length-1)
-      let newCell = freeCells[iii]
+      let newCell = null
+      let winnerCell = freeCells.find(cell => cell.id == this.winnerCellID)
 
-      if (newCell.id != this.winnerCellID &&
-        ( this.botIntellect > this.maxHumanIQ ||
-          (this.botIntellect > this.avgHumanIQ && randomInt(0,2) < 2)
-        )) { // умный бот пробует использовать центр
-        let magicCell = freeCells.find(cell => cell.id == this.winnerCellID)
-        if (magicCell) newCell = magicCell
+      if (winnerCell && randomInt(0,this.avgHumanIQ) < this.botIntellect) { // смышленый бот пробует использовать центр
+        newCell = winnerCell
+      }
+      else if (randomInt(51,this.maxHumanIQ) < this.botIntellect) { // умный бот ходит в угол или в центр
+        let cornerCells = freeCells.filter(fCell => ['11','13','31','33',this.winnerCellID].includes(fCell.id))
+        let iii = randomInt(0, cornerCells.length-1)
+        newCell = cornerCells[iii]
+      }
+
+      if (!newCell) {
+        let iii = randomInt(0, freeCells.length-1)
+        newCell = freeCells[iii]
       }
 
       if (newCell.id == this.winnerCellID) --this.botIntellect // мягко наказываем бота за использование центральной клетки
-      result.cells = [{id: newCell.id, chip: 'X', info: `bot походил ${newCell.id}`}]
+
+      result.cells = [{id: newCell.id, chip: this.botChip, info: `bot походил ${newCell.id}`}]
     }
 
     return [result, {receiver: {kind: 'board'}, wait: false}]

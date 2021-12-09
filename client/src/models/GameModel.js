@@ -9,7 +9,7 @@ import ButtonModel from './ButtonModel'
 import UserAvatar from "../components/UserAvatar"
 import StatusModel from './StatusModel'
 import { isString } from '../utils/funcs'
-
+import { useChatStore, useUserStore } from '..'
 
 /*
 Инфраструктурный класс игры
@@ -31,8 +31,8 @@ export default class GameModel {
   status = 'ready' // ready, play, pause, finish
   allStatuses
 
-  userTop
-  userBottom
+  userTop = null
+  userBottom = null
 
   wait = false
   info = null
@@ -47,8 +47,20 @@ export default class GameModel {
 
     this.cells = Object.create(null)
 
-    this.userTop = new UserModel({nickname: 'Foo Top'})
-    this.userBottom = new UserModel({nickname: 'Bar Bottom'})
+    setTimeout(() => { // временно, пока нет сервера для согласования игроков
+      runInAction(() => {
+        this.userBottom = new UserModel({nickname: 'Wit Bot'})
+        this.userBottom.isBot = true
+
+        let userStore = useUserStore()
+        this.userTop = userStore.currUser
+
+        userStore.addUser(this.userTop)
+        userStore.addUser(this.userBottom)
+
+        this.setStatus('ready')
+        })
+    }, 100)
 
     this.allStatuses = Object.create(null)
     this.allButtons = Object.create(null)
@@ -61,10 +73,13 @@ export default class GameModel {
     switAPI().subscribe('game', this.id, impact => this.receive(impact))
 
     makeObservable(this, {
+      userTop: observable,
+      userBottom: observable,
       status: observable,
       info: observable,
       infoLine: computed,
       setStatus: action,
+      showWinner: action,
       wait: observable,
       activeButtons: observable
     })
@@ -123,7 +138,7 @@ export default class GameModel {
     })
   }
 
-  setStatus(status) {
+  setStatus(status, info) {
     if (!status) throw 'Unknown setStatus'
 
     if (isString(status)) status = this.allStatuses[status]
@@ -135,8 +150,28 @@ export default class GameModel {
 
     this.wait = status.id != 'play'
     switch(status.id) {
-      case 'ready': this.info = null; break;
-      case 'finish': this.info = 'Игра завершена'; break;
+      case 'ready': this.info = null;
+        [this.userTop, this.userBottom] = [this.userBottom, this.userTop]
+        this.userTop.effect = 'X' // топ ходит первым, крестиками
+        this.userBottom.effect = 'O'
+
+        useChatStore().pushMessage('_clear', this.id)
+      break;
+      case 'finish':
+        this.info = 'Игра завершена';
+        this.showWinner(info)
+      break;
+      case 'play':
+        if (this.userTop.isBot) { // передаем право первого хода
+          switAPI().dispatch({
+            sender: this.DTO,
+            act: 'step'
+          })
+        }
+        else {
+          this.info = 'Ваш ход'
+        }
+      break;
     }
   }
 
@@ -224,16 +259,34 @@ export default class GameModel {
     }
   }
 
+  showWinner(info) {
+    if (!info) return
+
+    this.info = info
+    if (info.winner == this.userBottom.effect) {
+      this.userBottom.effect = 'WIN'
+      this.userTop.effect = null
+
+      ++this.userBottom.total;
+    }
+    else if (info.winner == this.userTop.effect) {
+      this.userBottom.effect = null
+      this.userTop.effect = 'WIN'
+
+      ++this.userTop.total;
+    }
+    else {
+      this.userBottom.effect = null
+      this.userTop.effect = null
+    }
+
+    setTimeout(() => useChatStore().pushMessage('' + info, this.id))
+  }
+
   receiveGame(impact) {
     console.log('receiveGame',impact)
 
-    if (impact.act == 'status-new') this.setStatus(impact.actData || impact.status || impact.act)
-
-    if (impact.info) {
-      runInAction(() => {
-        this.info = impact.info
-      })
-    }
+    if (impact.act == 'status-new') this.setStatus(impact.actData || impact.status || impact.act, impact.info)
 
     if (impact.cells) this.receiveBoard(impact)
   }
@@ -274,7 +327,7 @@ export default class GameModel {
   }
 
   get infoLine() {
-    return this.info || this.status.statusLine
+    return (this.info ? "" + this.info : this.info) || this.status.statusLine
   }
 
   /**
@@ -375,13 +428,13 @@ GameBoardHead(args) {
   }
 }
 
-var UserPlay = ({user}) => {
+var UserPlay = observer( ({user}) => {
 
-  if (user === undefined) return (<div>user is undefined</div>)
+  if (!user) return (<div>user is unknown</div>)
 
   return (
     <div>
       <UserAvatar user={user} mode="game-board"/>
     </div>
   )
-}
+})

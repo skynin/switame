@@ -38,6 +38,8 @@ export default class ChatStore {
 
     if (arrM.length > 99) arrM = arrM.slice(-99)
 
+    if (message == '_clear') arrM = []
+
     this.messages.set(gameId, arrM)
   }
 

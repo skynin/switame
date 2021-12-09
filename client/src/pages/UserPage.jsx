@@ -26,7 +26,7 @@ const avBorder = {
   side: "all"
 }
 
-const AvatarChange = ({currUser, currAvType, update}) => {
+const AvatarChange = ({currUser, currAvType, currAvId, update}) => {
 
   const avatarVariants = useMemo(()=>currUser.avatarTypes,[currUser.id])
 
@@ -43,7 +43,7 @@ const AvatarChange = ({currUser, currAvType, update}) => {
         children={(option, { checked, hover }) =>
         <Card key={option} border={checked ? avBorder : false}>
           <Avatar size="medium" margin="small" >
-            <Image fit="cover" src={currUser.avatarUrl(option)}/>
+            <Image fit="cover" src={currUser.avatarUrl(option, currAvId)}/>
           </Avatar>
         </Card>
       }
@@ -56,12 +56,23 @@ const AvatarChange = ({currUser, currAvType, update}) => {
 const UpdateSection = ({currUser}) => {
 
   let [currAvType, setAvType] = useState(currUser.avatarType)
+  let [currAvId, setAvId] = useState(currUser.avatarId)
   let [currNickname, setNickname] = useState(currUser.nickname)
+
+  function changeAvatarID(value) {
+    if (value == '_changeAvatarId') {
+      setAvId(currUser.avatarGenerateId())
+    }
+    else {
+      setAvType(value)
+    }
+  }
 
   function update() {
     currUser.updateFrom({
       nickname: currNickname,
-      avatarType: currAvType
+      avatarType: currAvType,
+      avatarId: currAvId
     });
     currUser.save();
   }
@@ -75,7 +86,7 @@ const UpdateSection = ({currUser}) => {
 
       <NickNameChange nickName={currNickname} update={setNickname}/>
 
-      <AvatarChange currUser={currUser} currAvType={currAvType} update={setAvType}/>
+      <AvatarChange currUser={currUser} currAvType={currAvType} currAvId={currAvId} update={changeAvatarID}/>
 
       <Button label="Сохранить" onClick={update} margin="medium"/>
     </div>

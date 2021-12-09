@@ -3,15 +3,14 @@ import { USER_ROUTE } from '../utils/consts';
 import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 
-
 const modes = {
   'left-side': {
-    height: "xsmall",
+    height: "7rem",
     size: "large",
     direction: "column"
   },
   'game-board': {
-    height: "xsmall",
+    height: "5rem",
     size: "xxsmall",
     direction: "row"
   }
@@ -21,16 +20,18 @@ const UserAvatar = observer( ({user, mode}) => {
 
   const currMode = modes[mode]
 
+  const winnerColor = mode == 'game-board' && user.effect == 'WIN' ? 'accent-1' : 'light-2'
+
   return (
-    <Card direction={currMode.direction} background="light-2" align='center' height={currMode.height}>
+    <Card background={winnerColor} direction={currMode.direction} align='center' margin="xxsmall" height={currMode.height}>
       <CardBody>
       <Link to={USER_ROUTE}>
       <Avatar size={currMode.size} margin="xxsmall">
-        <Image src={user.avatarUrl()}/>
+        <Image height="100%" src={user.avatarUrl()}/>
       </Avatar>
       </Link>
       </CardBody>
-      <CardFooter>{user.nickname}</CardFooter>
+      <CardFooter margin="xsmall" pad="xsmall">{user.nickname}</CardFooter>
     </Card>
   )
 })

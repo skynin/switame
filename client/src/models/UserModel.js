@@ -1,4 +1,4 @@
-import { nanoid } from '../utils/funcs';
+import { nanoid, randomInt } from '../utils/funcs';
 import MD5 from '../utils/md5';
 import { action, makeObservable, observable, runInAction } from "mobx"
 
@@ -7,16 +7,29 @@ function createAvatarId(id, authId) {
 }
 
 export default class UserModel {
-  constructor(args) {
+  id
+  authId
+
+  avatarType
+  avatarId
+
+  nickname = 'fooname123'
+
+  isAuth = false
+  effect = ''
+
+  total = 0
+
+  constructor({nickname} = {nickname: 'fooname123'}) {
     this._initNewUser()
 
-    if (args) {
-      const {nickname} = args
-      if (nickname) this.nickname = nickname
-    }
+    this.nickname = nickname
 
     makeObservable(this, {
       id: observable,
+      total: observable,
+      effect: observable,
+      avatarId: observable,
       authId: observable,
       avatarType: observable,
       nickname: observable,
@@ -28,16 +41,24 @@ export default class UserModel {
   _initNewUser() {
     this.id = nanoid()
     this.authId = nanoid()
-    this.avatarType = 'wavatar'
-    this.avatarId = createAvatarId(this.id, this.authId)
-    this.nickname = 'fooname123'
 
-    this.isAuth = false
+    let arrTypes = this.avatarTypes.slice(0, -1)
+    this.avatarType = arrTypes[randomInt(0, arrTypes.length-1)]
+
+    this.avatarId = createAvatarId(this.id, this.authId)
   }
 
   updateFrom(obj) {
-    this.nickname = obj.nickname;
-    this.avatarType = obj.avatarType;
+    if (obj.nickname) this.nickname = obj.nickname;
+    if (obj.avatarId) this.avatarId = obj.avatarId;
+    if (obj.avatarType) {
+      if (obj.avatarType == '_changeAvatarId') {
+        this.avatarId = this.avatarGenerateId()
+      }
+      else {
+        this.avatarType = obj.avatarType;
+      }
+    }
   }
 
   save() {
@@ -91,12 +112,22 @@ export default class UserModel {
     return true
   }
 
-  avatarUrl(avType) {
+  avatarGenerateId() {
+    return createAvatarId(this.id, nanoid())
+  }
+
+  avatarUrl(avType, avId) {
     avType = avType || this.avatarType
-    return 'https://www.gravatar.com/avatar/'+this.avatarId + '?d=' + avType
+    avId = avId || this.avatarId
+
+    if (avType == '_changeAvatarId') {
+      return '/changeAvatar.jpg'
+    }
+
+    return 'https://www.gravatar.com/avatar/'+ avId + '?d=' + avType
   }
 
   get avatarTypes() {
-    return ['wavatar', 'robohash', 'retro', 'monsterid', 'identicon']
+    return ['wavatar', 'robohash', 'retro', 'monsterid', 'identicon','_changeAvatarId']
   }
 }
