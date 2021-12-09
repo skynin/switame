@@ -78,8 +78,8 @@ export default class AiTicTacToe {
       }
     else if (impact.act == 'step') {
       if (this.botIntellect > this.avgHumanIQ) { // шибко умный, для первого хода
-        let extraAQ = Math.floor(Math.log(3 + this.botIntellect - this.avgHumanIQ) / Math.log(1.2))
-        this.botIntellect = this.avgHumanIQ + extraAQ
+        let extraIQ = Math.floor(Math.log(3 + this.botIntellect - this.avgHumanIQ) / Math.log(1.2))
+        this.botIntellect = this.avgHumanIQ + extraIQ
       }
 
       this.botChip = 'X'
