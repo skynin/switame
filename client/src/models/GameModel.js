@@ -1,4 +1,4 @@
-import { tempid } from '../utils/funcs'
+import { randomInt, tempid } from '../utils/funcs'
 import { Box, Button } from "grommet"
 import GameCell from './GameCell'
 import UserModel from './UserModel'
@@ -44,14 +44,19 @@ export default class GameModel {
   allButtons
   toolBars
 
+  variety = 'base'
+
   constructor(id) {
     this.id = id || tempid('g')
 
     this.cells = Object.create(null)
 
+    this.userTop = new UserModel({nickname: 'Toon' + randomInt(1,9)})
+    this.userBottom = new UserModel({nickname: 'Boon' + randomInt(1,9)})
+
     setTimeout(() => { // временно, пока нет сервера для согласования игроков
       runInAction(() => {
-        this.userBottom = new UserModel({nickname: 'Wit Bot'})
+        this.userBottom = new UserModel({nickname: 'WitBot ' + (randomInt(1,4095).toString(16)) })
         this.userBottom.isBot = true
 
         let userStore = useUserStore()
@@ -327,6 +332,7 @@ export default class GameModel {
     return {
       id: this.id,
       kind: 'game',
+      variety: this.variety,
       status: this.status.id,
       wait: this.wait,
       cells

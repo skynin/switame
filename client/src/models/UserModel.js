@@ -13,14 +13,14 @@ export default class UserModel {
   avatarType
   avatarId
 
-  nickname = 'fooname123'
+  nickname
 
   isAuth = false
   effect = ''
 
   total = 0
 
-  constructor({nickname} = {nickname: 'fooname123'}) {
+  constructor({nickname} = {nickname: 'foon'}) {
     this._initNewUser()
 
     this.nickname = nickname

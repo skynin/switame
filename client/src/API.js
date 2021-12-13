@@ -1,3 +1,4 @@
+import AiTicTacBoom from "./AI/AiTicTacBoom"
 import AiTicTacToe from "./AI/AiTicTacToe"
 import { nanoid } from "./utils/funcs"
 
@@ -8,6 +9,7 @@ class API {
   constructor() {
     this.subs = Object.create(null)
     this.debugAI = new AiTicTacToe()
+    // this.debugAI = new AiTicTacBoom()
   }
 
   dispatch(inAct) {

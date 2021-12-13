@@ -35,6 +35,7 @@ const uniRender = observer ( ({cell}) => {
 
   return (
     <Box border="all" background={winEffect} align="center" justify="center" onClick={e => clickCell() }>
+      {cell.id}
       <CellShow chip={cell.chip} wait={cell.wait}/>
     </Box>
   )

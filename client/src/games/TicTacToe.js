@@ -10,12 +10,16 @@ import { useChatStore } from ".."
 
 export default class TicTacToe extends GameModel {
 
+  sizeBoard = 3
+
   constructor(id) {
     super(id)
 
     runInAction(() => {
       this.wait = true
     })
+
+    this.variety = 'tic-tac-toe'
   }
 
   /**
@@ -23,8 +27,8 @@ export default class TicTacToe extends GameModel {
    * @returns {this}
    */
   initEmpty() {
-    for (let col=1; col < 4; ++col) {
-      for (let row=1; row < 4; ++row) {
+    for (let col=1; col <= this.sizeBoard; ++col) {
+      for (let row=1; row <= this.sizeBoard; ++row) {
         let tCell = new TicTacToeCell(''+col+row, this)
         this.cells[tCell.id] = tCell
       }
@@ -47,11 +51,18 @@ export default class TicTacToe extends GameModel {
     const rowSize = 'xsmall';
     const columnSize = 'xsmall';
 
-    const areas = [1,2,3].map(eachColumn => {
-      return [1,2,3].map((eachRow) => {
+    let arrFill = []
+    for (let iii=1; iii <= this.sizeBoard; ++iii) {
+      arrFill.push(iii)
+    }
+
+    const areas = arrFill.map(eachColumn => {
+      return arrFill.map((eachRow) => {
         return { name: '' + eachColumn + eachRow, start: [eachColumn-1, eachRow-1], end: [eachColumn-1, eachRow-1] }
       })
     }).flat()
+
+    console.log('areas',areas)
 
     function createGridKey(key) {
       return '' + key.charAt(0) + key.charAt(1)
@@ -63,12 +74,12 @@ export default class TicTacToe extends GameModel {
 
       return (
       <Grid
-        rows={[rowSize, rowSize, rowSize]}
-        columns={[columnSize, columnSize, columnSize]}
+        rows={arrFill.fill(rowSize)}
+        columns={arrFill.fill(columnSize)}
         gap="xxsmall"
         areas={areas}
       >
-        {arrCells.map (([key, cell])=>{
+        {arrCells.map(([key, cell]) => {
 
           let GCell = cell.renderFunc()
 

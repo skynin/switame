@@ -1,6 +1,7 @@
 import TicTacToe from "../games/TicTacToe"
 import GameModel from "../models/GameModel"
 import FooGame from "../models/FooGame"
+import TicTacBoom from "../games/TicTacBoom"
 
 export default class GameStore {
 
@@ -9,6 +10,7 @@ export default class GameStore {
   constructor() {
     this.games = new Map()
     this.addGame(new TicTacToe().initEmpty(), 'current')
+    //this.addGame(new TicTacBoom().initEmpty(), 'current')
     this.addGame(new FooGame().initEmpty().startAutoPlay(), 'second')
   }
 
