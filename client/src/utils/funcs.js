@@ -29,7 +29,10 @@ export const throttle = (func, timeFrame, delay) => {
   };
 }
 
-export const shuffleArray = array => {
+export const shuffleArray = (array, copy) => {
+
+  if (copy) array = [...array]
+
   // The Fisher-Yates algorith
   // https://dev.to/codebubb/how-to-shuffle-an-array-in-javascript-2ikj
   for (let i = array.length - 1; i > 0; i--) {
@@ -38,6 +41,8 @@ export const shuffleArray = array => {
     array[i] = array[j];
     array[j] = temp;
   }
+
+  return array
 }
 
 export const randomInt = (min, max) => {

@@ -62,7 +62,7 @@ export default class TicTacToe extends GameModel {
       })
     }).flat()
 
-    console.log('areas',areas)
+    // console.log('areas',areas)
 
     function createGridKey(key) {
       return '' + key.charAt(0) + key.charAt(1)

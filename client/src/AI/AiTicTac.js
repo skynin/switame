@@ -1,4 +1,5 @@
 import { isString, randomInt, shuffleArray } from "../utils/funcs"
+import FastBoard from "./FastBoard"
 
 export class InfoData {
   winner = '?'
@@ -12,107 +13,20 @@ export class InfoData {
   }
 }
 
-class FastBoard {
-
-  constructor (cells, ai) {
-    this.cells = cells
-
-    this._last = this.clearLast()
-
-    this._board = new Array(ai.boardEdge)
-    for(let iii = this._board.length-1; iii >= 0; --iii) {
-      this._board[iii] = new Array(ai.boardEdge)
-    }
-
-    cells.forEach(cell => {
-      try {
-        this._board[cell.id.charAt(0)-1][cell.id.charAt(1)-1] = cell
-      } catch(ex) {
-        console.error(cell)
-        console.error(ai)
-        console.error(this._board)
-    }
-    })
-  }
-
-  setVerifyCell(cell, saveLast = false) {
-    if (saveLast) this._last[cell.id] = cell
-    else {
-      this._last = this.clearLast()
-      this._last[cell.id] = cell
-    }
-
-    this._verifyCell = cell
-
-    this._verifyCol = Number(cell.id.charAt(0))
-    this._verifyRow = Number(cell.id.charAt(1))
-
-    console.log('setVerifyCell', this._verifyCell, this._verifyCol, this._verifyRow)
-  }
-
-  /**
-   *
-   * @param {number} variedCol
-   * @param {number} variedRow
-   * @returns {boolean}
-   */
-  checkChipByVaried(variedCol, variedRow) {
-    if (variedCol == 0 && variedRow == 0) return true // нет смещения, незачем проверять ту же ячейку
-
-    const cell = this.getValByColRow(this._verifyCol + variedCol, this._verifyRow + variedRow)
-
-    const result = cell ? cell.chip == this._verifyCell.chip : false
-
-    if (result) {
-      this._last[this._verifyCell.id] = this._verifyCell
-      this._last[cell.id] = cell
-    }
-
-    return result
-  }
-
-  /**
-   *
-   * @param {number} column
-   * @param {number} row
-   * @param {(string|undefined)} attrCell
-   * @returns
-   */
-  getValByColRow(column, row, attrCell) {
-    let result = this._board?.[column-1]?.[row-1]
-    console.log('getValByColRow', 'cX' + column, 'rY' + row, ' - ' + result?.chip)
-    if (result) {
-      return attrCell ? result[attrCell] : result
-    }
-
-    return result
-  }
-
-  clearLast() {
-    this._last = Object.create(null)
-    return this._last
-  }
-
-  /**
-   * Проверенные ячейки, каждый вызов getValByColRow добавляет найденную ячейку
-   * @returns {Array}
-   */
-  get lastCheckedCells() {
-    return Object.values(this._last)
-  }
-}
-
 export default class AiTicTac {
 
   // Люди с тяжелой формой умственной отсталости не поддаются обучению и воспитанию,
   // имеют уровень интеллектуального развития до 20 баллов. Они находятся под опекой других людей,
   // так как не могут о себе позаботиться, и живут в собственном мире. Таких людей в мире 0,2 %.
   botIntellect = 20
-  boardEdge = 3
+  // Уровень IQ от 21 до 50 https://brainapps.ru/blog/2015/08/urovni-znacheniy-iq-i-ikh-rasshifrovka/
+  // около 2% людей - слабоумие, способны позаботиться о себе, обычно имеют опекунов
+  lowHumanIQ = 45
 
   maxHumanIQ = 144 // 0,2% людей
   avgHumanIQ = 90 // это средний уровень IQ
 
+  boardEdge = 3
   centerCellID = '22'
 
   constructor() {
@@ -307,7 +221,54 @@ variedCol=1 variedRow=1
       return true
     }
 
-    return false
+    let cell = impact.impact.sender
+    let origCells = impact.sender.cells
+
+    const calcMotion = () => {
+      let resultCells = []
+      let winnerResult = false;
+
+      let result = {receiver: {kind: 'board'}, cells: [], wait: true}
+      let manCell = cell.id
+      let canBotStep = true
+
+      if (cell.chip == 'chip') {
+        let tCells = {id: manCell, chip: this.userChip, info: `user походил ${manCell}` }
+        result.cells.push(tCells)
+
+        result.cells = this.boardChange(origCells, result.cells)
+        resultCells = this.mergeCells(origCells, result.cells)
+        winnerResult = this.checkWin(origCells, result.cells)
+      }
+      else {
+        // result.cells.push({id: manCell, chip: (cell.chip == 'X' ? 'O' : 'X')})
+        result.cells.push({id: manCell, info: `Клетка ${manCell} уже занята`})
+        result.wait = false
+        canBotStep = false
+      }
+
+      if (manCell==this.centerCellID) this.botIntellect += 4 // бот быстро смекает что центральная клетка выгодная
+
+      dispatcher(result)
+
+      if (winnerResult) {
+        this.dispatchFinish(winnerResult, dispatcher)
+        this.botIntellect += 6 // бот учится на ошибках
+      }
+      else if (canBotStep) setTimeout(() => {
+        let fullResult = this.botStep(resultCells)
+        dispatcher(fullResult);
+        winnerResult = this.checkWin(resultCells, fullResult[0].cells)
+        if (winnerResult) {
+          this.dispatchFinish(winnerResult, dispatcher, `; IQ бота ${this.botIntellect}`)
+          this.botIntellect -= 2 // головокружение от успеха
+        }
+      })
+    }
+
+    setTimeout(calcMotion)
+
+    return true;
   }
 
   // проверка победы или ничьи
@@ -356,6 +317,71 @@ variedCol=1 variedRow=1
   }
 
   botStep(boardCells) {
-    console.log('botStep',boardCells)
+    let result = {receiver: {kind: 'board'}, cells: false, wait: true}
+
+    let freeCells = boardCells.filter(eachCell => eachCell.chip == 'chip')
+
+    if (freeCells.length > 3) shuffleArray(freeCells)
+
+    // ищем свой выигрышный ход
+    if (randomInt(0,this.lowHumanIQ) < this.botIntellect) {
+      for (let nCell of freeCells) {
+        let tCells = this.boardChange(boardCells, [{...nCell, chip: this.botChip, info: `bot походил ${nCell.id}`}])
+
+        if (this.checkWin(boardCells, tCells)) {
+          result.cells = tCells
+          return [result, {receiver: {kind: 'board'}, wait: false}]
+        }
+      }
+    }
+
+    // ищем чужой выигрышный ход, если интеллекта хватает
+    if (randomInt(0,this.avgHumanIQ) < this.botIntellect) {
+      for (let nCell of freeCells) {
+        let tCells = this.boardChange(boardCells, [{...nCell, chip: this.userChip, info: `user походил ${nCell.id}`}])
+
+        if (this.checkWin(boardCells, tCells)) {
+          tCells[0].chip = this.botChip
+          tCells[0].info = `bot походил ${nCell.id}`
+
+          result.cells = tCells
+
+          return [result, {receiver: {kind: 'board'}, wait: false}]
+        }
+      }
+    }
+
+    if (freeCells.length) {
+      result.cells = this.boardChange(boardCells, this._botStepFreeCells(freeCells))
+    }
+
+    return [result, {receiver: {kind: 'board'}, wait: false}]
+  }
+
+  _botStepFreeCells(freeCells) {
+
+    if (freeCells.length > 1) ++this.botIntellect; // интеллект бота растет
+
+    let newCell = null
+
+    if (!newCell) {
+      let iii = randomInt(0, freeCells.length-1)
+      newCell = freeCells[iii]
+    }
+
+    if (newCell.id == this.centerCellID) --this.botIntellect // мягко наказываем бота за использование центральной клетки
+
+    return [{id: newCell.id, chip: this.botChip, info: `bot походил ${newCell.id}`}]
+  }
+
+  /**
+   * Возвращает массив измененных ячеек после применения newCells
+   * newCells включен в результат
+   * @param {Array} origCells
+   * @param {Array} newCells
+   * @returns {Array}
+   */
+  boardChange(origCells, newCells) {
+    return newCells
   }
 }

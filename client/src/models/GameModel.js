@@ -100,8 +100,10 @@ export default class GameModel {
 
       let newStatus = args || game.status.nextStatus
 
-      game.wait = true
-      game.info = 'Ожидание подтверждения'
+      runInAction(() => {
+        game.wait = true
+        game.info = 'Ожидание подтверждения'
+      })
 
       switAPI().dispatch({
         sender: game.DTO,
@@ -140,7 +142,7 @@ export default class GameModel {
   }
 
   _sendToAllCells(impact) {
-    this.arrCells.forEach(eachCell => {
+    this.cellsArr.forEach(eachCell => {
       eachCell.receive({...impact, id: eachCell.id})
     })
   }
@@ -201,7 +203,7 @@ export default class GameModel {
   }
 
   // * * * Public
-  get arrCells() {
+  get cellsArr() {
     return Object.values(this.cells)
   }
 
@@ -287,9 +289,14 @@ export default class GameModel {
 
       ++this.userTop.total;
     }
-    else {
+    else { // ничья
       this.userBottom.effect = null
       this.userTop.effect = null
+
+      for (let cell of this.cellsArr) {
+        let nCell = {...cell.DTO, brim: 'DRAW'}
+        cell.receive(nCell)
+      }
     }
 
     setTimeout(() => useChatStore().pushMessage('' + info, this.id))
@@ -327,7 +334,7 @@ export default class GameModel {
   }
 
   get DTO() {
-    let cells = Object.values(this.cells).map(eachCell => eachCell.DTO)
+    let cells = this.cellsArr.map(eachCell => eachCell.DTO)
 
     return {
       id: this.id,

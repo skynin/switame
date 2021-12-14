@@ -31,7 +31,7 @@ const uniRender = observer ( ({cell}) => {
     }
   },[cell.info])
 
-  let winEffect = cell.effect == 'WIN' ? 'accent-1' : ''
+  let winEffect = cell.brim == 'DRAW' ? 'accent-4' : (cell.effect == 'WIN' ? 'accent-1' : '')
 
   return (
     <Box border="all" background={winEffect} align="center" justify="center" onClick={e => clickCell() }>
