@@ -60,17 +60,17 @@ export default class AiTicTacToe extends AiTicTac {
   }
 
   // ход бота, случайный выбор
-  _botStepFreeCells(freeCells) {
+  _botStepFreeCells(boardCells, freeCells) {
 
     if (freeCells.length > 1) ++this.botIntellect; // интеллект бота растет
 
     let newCell = null
     let winnerCell = freeCells.find(cell => cell.id == this.centerCellID)
 
-    if (winnerCell && randomInt(0,this.avgHumanIQ) < this.botIntellect) { // смышленый бот пробует использовать центр
+    if (winnerCell && this.checkBotIQ(this.avgHumanIQ)) { // смышленый бот пробует использовать центр
       newCell = winnerCell
     }
-    else if (randomInt(0,this.maxHumanIQ) < this.botIntellect) { // умный бот ходит в угол или в центр
+    else if (this.checkBotIQ(this.maxHumanIQ)) { // умный бот ходит в угол или в центр
       let cornerCells = freeCells.filter(fCell => ['11','13','31','33',this.centerCellID].includes(fCell.id))
       let iii = randomInt(0, cornerCells.length-1)
       newCell = cornerCells[iii]

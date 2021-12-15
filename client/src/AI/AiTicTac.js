@@ -50,7 +50,7 @@ export default class AiTicTac {
    */
   checkWin(origCells, newCells) {
 
-    console.group('checkWin');
+    // console.group('checkWin');
 
     // получить итоговое расположение на поле
     let resultCells = newCells ? this.mergeCells(origCells, newCells) : origCells
@@ -105,7 +105,7 @@ variedCol=1 variedRow=1
       if (cCell) resultBoard.setVerifyCell(cCell, true);
 
       let [variedCol, variedRow]  = cDir
-      console.log('checkCell cDir', variedCol, variedRow)
+      // console.log('checkCell cDir', variedCol, variedRow)
 
       let algCoo = dfCoo[0]
       if (variedCol == -1 && variedRow == -1) {
@@ -152,9 +152,10 @@ variedCol=1 variedRow=1
       }
     }
 
-    console.groupEnd();
+    // console.groupEnd();
 
-    return winCell ? [winCell, checkedCells] : (resultCells.every(cell => cell.chip != 'chip') ? ['DRAW'] : false)
+    return winCell ? [winCell, checkedCells] :
+    (resultCells.filter(cell => cell.brim != '.').every(cell => cell.chip != 'chip' && cell.chip != '*') ? ['DRAW'] : false)
   }
 
     /**
@@ -225,6 +226,8 @@ variedCol=1 variedRow=1
     let origCells = impact.sender.cells
 
     const calcMotion = () => {
+      const startStep = Date.now() / 1000
+
       let resultCells = []
       let winnerResult = false;
 
@@ -232,7 +235,7 @@ variedCol=1 variedRow=1
       let manCell = cell.id
       let canBotStep = true
 
-      if (cell.chip == 'chip') {
+      if ((cell.chip == 'chip' && cell.brim == 'brim') || (cell.chip == '*' && cell.brim == 'brim')) {
         let tCells = {id: manCell, chip: this.userChip, info: `user походил ${manCell}` }
         result.cells.push(tCells)
 
@@ -252,18 +255,26 @@ variedCol=1 variedRow=1
       dispatcher(result)
 
       if (winnerResult) {
-        this.dispatchFinish(winnerResult, dispatcher)
-        this.botIntellect += 6 // бот учится на ошибках
+        setTimeout(() => {
+          this.dispatchFinish(winnerResult, dispatcher)
+          this.botIntellect += 6 // бот учится на ошибках
+        },50)
       }
       else if (canBotStep) setTimeout(() => {
-        let fullResult = this.botStep(resultCells)
-        dispatcher(fullResult);
-        winnerResult = this.checkWin(resultCells, fullResult[0].cells)
-        if (winnerResult) {
-          this.dispatchFinish(winnerResult, dispatcher, `; IQ бота ${this.botIntellect}`)
-          this.botIntellect -= 2 // головокружение от успеха
-        }
-      })
+        const fullResult = this.botStep(resultCells)
+
+        const timeOut = Math.max(Math.floor(300 - this.botIntellect - Date.now() / 1000 + startStep), 100)
+
+        setTimeout(() => {
+          dispatcher(fullResult);
+          setTimeout(() => {
+            winnerResult = this.checkWin(resultCells, fullResult[0].cells)
+            if (winnerResult) {
+              this.dispatchFinish(winnerResult, dispatcher, `; IQ бота ${this.botIntellect}`)
+              this.botIntellect -= 2 // головокружение от успеха
+            }}, 20)
+          }, timeOut)
+        })
     }
 
     setTimeout(calcMotion)
@@ -316,17 +327,21 @@ variedCol=1 variedRow=1
     dispatcher(sendImpact)
   }
 
+  checkBotIQ(threshold) {
+    return threshold < this.botIntellect || randomInt(0, threshold) < this.botIntellect
+  }
+
   botStep(boardCells) {
     let result = {receiver: {kind: 'board'}, cells: false, wait: true}
 
-    let freeCells = boardCells.filter(eachCell => eachCell.chip == 'chip')
+    let freeCells = boardCells.filter(eachCell => (eachCell.chip == 'chip' || eachCell.chip == '*') && eachCell.brim == 'brim')
 
     if (freeCells.length > 3) shuffleArray(freeCells)
 
     // ищем свой выигрышный ход
-    if (randomInt(0,this.lowHumanIQ) < this.botIntellect) {
+    if (this.checkBotIQ(this.lowHumanIQ)) {
       for (let nCell of freeCells) {
-        let tCells = this.boardChange(boardCells, [{...nCell, chip: this.botChip, info: `bot походил ${nCell.id}`}])
+        let tCells = this.boardChange(boardCells, [{...nCell, chip: this.botChip, info: `bot походил ${nCell.id}`, debug:'win'}])
 
         if (this.checkWin(boardCells, tCells)) {
           result.cells = tCells
@@ -336,15 +351,16 @@ variedCol=1 variedRow=1
     }
 
     // ищем чужой выигрышный ход, если интеллекта хватает
-    if (randomInt(0,this.avgHumanIQ) < this.botIntellect) {
+    if (this.checkBotIQ(this.avgHumanIQ)) {
       for (let nCell of freeCells) {
-        let tCells = this.boardChange(boardCells, [{...nCell, chip: this.userChip, info: `user походил ${nCell.id}`}])
+        let tCells = this.boardChange(boardCells, [{...nCell, chip: this.userChip, info: `user походил ${nCell.id}`, debug: 'check'}])
 
         if (this.checkWin(boardCells, tCells)) {
           tCells[0].chip = this.botChip
           tCells[0].info = `bot походил ${nCell.id}`
+          tCells[0].debug = 'contra'
 
-          result.cells = tCells
+          result.cells = this.boardChange(boardCells, [tCells[0]])
 
           return [result, {receiver: {kind: 'board'}, wait: false}]
         }
@@ -352,17 +368,19 @@ variedCol=1 variedRow=1
     }
 
     if (freeCells.length) {
-      result.cells = this.boardChange(boardCells, this._botStepFreeCells(freeCells))
+      result.cells = this.boardChange(boardCells, this._botStepFreeCells(boardCells, freeCells))
     }
 
     return [result, {receiver: {kind: 'board'}, wait: false}]
   }
 
-  _botStepFreeCells(freeCells) {
+  _botStepFreeCells(boardCells, freeCells) {
 
     if (freeCells.length > 1) ++this.botIntellect; // интеллект бота растет
 
     let newCell = null
+
+    // здесь дополнительные проверки
 
     if (!newCell) {
       let iii = randomInt(0, freeCells.length-1)

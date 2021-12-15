@@ -255,6 +255,13 @@ export default class GameModel {
         return
       }
 
+      if (this.status.id != 'play') {
+        runInAction(()=>{
+          this.info = 'Игра уже завершена'
+        })
+        return
+      }
+
       runInAction(()=>{
         this.wait = tempid('sg') // для идентификации ответа
         this.info = 'Ждем ответа...'
@@ -367,7 +374,7 @@ export default class GameModel {
 
   return () => {
     return (
-      <Box align="center">
+      <Box align="center" style={{userSelect: "none"}}>
         <GameBoardHead game={game}/>
         <GBoard game={game}/>
         <GameBoardFooter game={game}/>

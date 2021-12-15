@@ -14,9 +14,7 @@ export default class FastBoard {
       try {
         this._board[cell.id.charAt(0)-1][cell.id.charAt(1)-1] = cell
       } catch(ex) {
-        console.error(cell)
-        console.error(ai)
-        console.error(this._board)
+        console.error('FastBoard',cell,this._board,ai)
     }
     })
   }
@@ -33,7 +31,7 @@ export default class FastBoard {
     this._verifyCol = Number(cell.id.charAt(0))
     this._verifyRow = Number(cell.id.charAt(1))
 
-    console.log('setVerifyCell', this._verifyCell, this._verifyCol, this._verifyRow)
+    // console.log('setVerifyCell', this._verifyCell, this._verifyCol, this._verifyRow)
   }
 
   /**
@@ -66,7 +64,7 @@ export default class FastBoard {
    */
   getValByColRow(column, row, attrCell) {
     let result = this._board?.[column-1]?.[row-1]
-    console.log('getValByColRow', 'cX' + column, 'rY' + row, ' - ' + result?.chip)
+    // console.log('getValByColRow', 'cX' + column, 'rY' + row, ' - ' + result?.chip)
     if (result) {
       return attrCell ? result[attrCell] : result
     }

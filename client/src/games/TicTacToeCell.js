@@ -5,12 +5,17 @@ import { makeObservable, observable, runInAction, action } from "mobx"
 import GameCell from "../models/GameCell"
 import { useChatStore } from ".."
 
+const starSymb = String.fromCharCode(0x2727)
+
 function CellShow({chip, brim, wait}) {
 
-  if (chip == 'chip') chip = ""
+  let color = chip == 'O' ? 'blue' : (chip == 'X' ? 'green' : 'red')
+  if (chip == 'chip') chip = "";
 
-  let color = chip == 'O' ? 'red' : 'green'
   if (wait) {color = 'gray'; chip='?'}
+
+  if (chip == '*') chip = starSymb;
+
   return (
     <div style={{color: color, fontSize: "64px"}}>{chip}</div>
   )
@@ -21,7 +26,7 @@ const uniRender = observer ( ({cell}) => {
   const chatStore = useChatStore()
 
   const clickCell = () => {
-      cell.click()
+      if (cell.brim == 'brim') cell.click()
     }
 
   useEffect(() => {
@@ -32,10 +37,17 @@ const uniRender = observer ( ({cell}) => {
   },[cell.info])
 
   let winEffect = cell.brim == 'DRAW' ? 'accent-4' : (cell.effect == 'WIN' ? 'accent-1' : '')
+  if (cell.brim == '.') winEffect = 'neutral-3'
 
+  let border = 'all'
+  if (cell.effect == 'hide') {
+    border = false
+    winEffect = 'dark-1'
+    // winEffect = ''
+  }
+// {cell.id}
   return (
-    <Box border="all" background={winEffect} align="center" justify="center" onClick={e => clickCell() }>
-      {cell.id}
+    <Box border={border} background={winEffect} align="center" justify="center" onClick={e => clickCell() }>
       <CellShow chip={cell.chip} wait={cell.wait}/>
     </Box>
   )
@@ -54,5 +66,28 @@ export default class TicTacToeCell extends GameCell {
    */
   renderFunc(args) {
     return uniRender
+  }
+
+  _corners = ['11','55','15','51']
+
+  actClear(impact) {
+    super.actClear(impact)
+    if (this.game.variety == 'tic-tac-boom') {
+      let col = this.id.charAt(0), row=this.id.charAt(1)
+
+      if (this._corners.includes(this.id)) {
+        // fff
+      }
+      else if (this.id == 33) { // || this._corners.includes(this.id)) {
+        this.brim = '.'
+        this.chip = 'chip'
+        this.effect = 'hide'
+      }
+      else if (col == 1 || col == this.game.sizeBoard || row == 1 || row == this.game.sizeBoard) {
+        this.brim = '.'
+        // this.chip = this._corners.includes(this.id) ? 'chip' : '*'
+        this.chip = '*'
+      }
+    }
   }
 }
