@@ -23,21 +23,24 @@ class API {
 
     setTimeout((impact) => { // может быть дооооооооолгим
 
+      console.log('dispatch', impact)
+
       for (let kindOf of ['game'])
         if (impact?.sender.kind == kindOf) {
-          let funcSub = this.subs[kindOf][impact?.sender?.id]
+          let responser = this.subs[kindOf][impact?.sender?.id]
 
-          if (funcSub) {
-            console.log('dispatch', impact)
+          if (responser) {
 
             let debugAI = impact.sender.variety ? this._varietyes[impact.sender.variety] : this.debugAI
 
             debugAI.thinkIt(impact, response => {
-              console.log('funcSub',response)
               if (Array.isArray(response))
                 response = response.map(r => {r.stamp = impact.stamp; return r})
               else response.stamp = impact.stamp
-              funcSub(response)
+
+              console.info('response', response)
+
+              responser(response)
             })}
           else
             console.error('API.dispatch unknown funcSub', impact)

@@ -1,16 +1,13 @@
-import { Box, Grid, Button } from "grommet"
+import { Grid } from "grommet"
 import TicTacToeCell from "./TicTacToeCell"
-import { tempid } from "../utils/funcs"
 import GameModel from "../models/GameModel"
-import UserAvatar from "../components/UserAvatar"
-import { observer } from "mobx-react-lite"
 import { runInAction } from "mobx"
-import { useEffect } from "react"
-import { useChatStore } from ".."
 
 export default class TicTacToe extends GameModel {
 
   sizeBoard = 3
+
+  displayName = 'TicTacToe'
 
   constructor(id) {
     super(id)

@@ -1,5 +1,6 @@
-import { isString, randomInt, shuffleArray } from "../utils/funcs"
+import { isString, logBase, randomInt, shuffleArray } from "../utils/funcs"
 import FastBoard from "./FastBoard"
+import TestAI from "./TestAI"
 
 export class InfoData {
   winner = '?'
@@ -183,21 +184,20 @@ variedCol=1 variedRow=1
           result[0].actData = 'finish'
           break;
         default:
-          console.log('TODO status-new', impact.sender.status, impact)
+          console.log('TODO: status-new', impact.sender.status, impact)
           result[0].status = impact.act
         }
       }
     else if (impact.act == 'step') {
       if (randomInt(this.avgHumanIQ, this.maxHumanIQ) < this.botIntellect) { // шибко умный стал
-        let extraIQ = Math.floor(Math.log(3 + this.botIntellect - this.avgHumanIQ) / Math.log(1.2))
-        this.botIntellect = this.avgHumanIQ + extraIQ
+        this.botIntellect = this.avgHumanIQ + logBase(this.botIntellect - this.avgHumanIQ, 1.2)
       }
 
       this.botChip = 'X'
       result = this.botStep(impact.sender.cells)
     }
     else {
-      console.log('TODO act', impact.act, impact)
+      console.log('TODO: act', impact.act, impact)
       result[0].status = impact.act
     }
 
@@ -214,6 +214,7 @@ variedCol=1 variedRow=1
       dispatcher(result)
 
       dispatcher(this.gameState(impact))
+
       return true
     }
 
@@ -221,6 +222,8 @@ variedCol=1 variedRow=1
       dispatcher({error: 'AiTicTacToe: неизвестный impact'})
       return true
     }
+
+    // new TestAI().sendTestData(dispatcher)
 
     let cell = impact.impact.sender
     let origCells = impact.sender.cells
@@ -308,7 +311,7 @@ variedCol=1 variedRow=1
       return
     }
 
-    console.log('winnerResult',winnerResult)
+    // console.log('winnerResult',winnerResult)
 
     // отметить ячейки которые выиграли
     checkedCells.forEach(cell => {
@@ -331,17 +334,24 @@ variedCol=1 variedRow=1
     return threshold < this.botIntellect || randomInt(0, threshold) < this.botIntellect
   }
 
-  botStep(boardCells) {
+  filterFreeCells(boardCells) {
+    return boardCells.filter(eachCell => (eachCell.chip == 'chip' || eachCell.chip == '*') && eachCell.brim == 'brim')
+  }
+
+  botStep(boardCells) { // , deepLimit = 0) {
+
+    // if (deepLimit && deepLimit > logBase(this.botIntellect, 8)) return null; // 8 для 20 1.441
+
     let result = {receiver: {kind: 'board'}, cells: false, wait: true}
 
-    let freeCells = boardCells.filter(eachCell => (eachCell.chip == 'chip' || eachCell.chip == '*') && eachCell.brim == 'brim')
+    let freeCells = this.filterFreeCells(boardCells)
 
     if (freeCells.length > 3) shuffleArray(freeCells)
 
     // ищем свой выигрышный ход
     if (this.checkBotIQ(this.lowHumanIQ)) {
       for (let nCell of freeCells) {
-        let tCells = this.boardChange(boardCells, [{...nCell, chip: this.botChip, info: `bot походил ${nCell.id}`, debug:'win'}])
+        let tCells = this.boardChange(boardCells, {...nCell, chip: this.botChip, info: `bot походил ${nCell.id}`, debug:'win'})
 
         if (this.checkWin(boardCells, tCells)) {
           result.cells = tCells
@@ -351,19 +361,11 @@ variedCol=1 variedRow=1
     }
 
     // ищем чужой выигрышный ход, если интеллекта хватает
-    if (this.checkBotIQ(this.avgHumanIQ)) {
-      for (let nCell of freeCells) {
-        let tCells = this.boardChange(boardCells, [{...nCell, chip: this.userChip, info: `user походил ${nCell.id}`, debug: 'check'}])
-
-        if (this.checkWin(boardCells, tCells)) {
-          tCells[0].chip = this.botChip
-          tCells[0].info = `bot походил ${nCell.id}`
-          tCells[0].debug = 'contra'
-
-          result.cells = this.boardChange(boardCells, [tCells[0]])
-
-          return [result, {receiver: {kind: 'board'}, wait: false}]
-        }
+    if (this.checkBotIQ(this.maxHumanIQ)) {
+      const dCells = this._deepMind(boardCells, freeCells)
+      if (dCells) {
+        result.cells = dCells
+        return [result, {receiver: {kind: 'board'}, wait: false}]
       }
     }
 
@@ -374,9 +376,22 @@ variedCol=1 variedRow=1
     return [result, {receiver: {kind: 'board'}, wait: false}]
   }
 
-  _botStepFreeCells(boardCells, freeCells) {
+  _deepMind(boardCells, freeCells, deepLimit = 1) {
+    for (let nCell of freeCells) {
+      let tCells = this.boardChange(boardCells, {...nCell, chip: this.userChip, info: `user походил ${nCell.id}`, debug: `check ${deepLimit}`})
 
-    if (freeCells.length > 1) ++this.botIntellect; // интеллект бота растет
+      if (this.checkWin(boardCells, tCells)) {
+        tCells[0].chip = this.botChip
+        tCells[0].info = `bot походил ${nCell.id}`
+        tCells[0].debug = 'contra'
+
+        return tCells
+      }
+    }
+    return null
+  }
+
+  _botStepFreeCells(boardCells, freeCells) {
 
     let newCell = null
 
@@ -396,10 +411,10 @@ variedCol=1 variedRow=1
    * Возвращает массив измененных ячеек после применения newCells
    * newCells включен в результат
    * @param {Array} origCells
-   * @param {Array} newCells
+   * @param {Array|Object} newCells
    * @returns {Array}
    */
   boardChange(origCells, newCells) {
-    return newCells
+    return Array.isArray(newCells) ? [...newCells] : [newCells]
   }
 }

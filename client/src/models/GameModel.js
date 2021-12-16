@@ -1,4 +1,4 @@
-import { randomInt, tempid } from '../utils/funcs'
+import { charCode, randomInt, tempid } from '../utils/funcs'
 import { Box, Button } from "grommet"
 import GameCell from './GameCell'
 import UserModel from './UserModel'
@@ -276,7 +276,7 @@ export default class GameModel {
     }
 
     if (impact.sender.kind == 'button') {
-      // TODO отправить на сервер желаемое пользователем действие
+      // TODO: отправить на сервер желаемое пользователем действие
     }
   }
 
@@ -296,7 +296,7 @@ export default class GameModel {
 
       ++this.userTop.total;
     }
-    else { // ничья
+    else if (this.userBottom.effect && this.userTop.effect) { // ничья
       this.userBottom.effect = null
       this.userTop.effect = null
 
@@ -310,7 +310,7 @@ export default class GameModel {
   }
 
   receiveGame(impact) {
-    console.log('receiveGame',impact)
+    // console.log('receiveGame',impact)
 
     if (impact.act == 'status-new') this.setStatus(impact.actData || impact.status || impact.act, impact.info)
 
@@ -319,7 +319,7 @@ export default class GameModel {
 
   receiveBoard(impact) {
     try {
-      console.log('receiveBoard',impact)
+      // console.log('receiveBoard',impact)
 
       if (impact.cells) {
 
@@ -399,6 +399,9 @@ GameBoardHead(args) {
 
     return (
       <Box align="center">
+      <Box direction="row" pad="xxsmall">
+        <h3>{game.displayName}</h3>
+      </Box>
       <Box direction="row">
         <UserPlay user={game.userTop}/>&nbsp;
         <UserPlay user={game.userBottom}/>

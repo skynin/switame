@@ -1,5 +1,5 @@
 import { makeObservable, observable, runInAction, action, computed } from "mobx"
-import { tempid } from "../utils/funcs"
+import { isString, tempid } from "../utils/funcs"
 
 export default class ChatStore {
 
@@ -31,7 +31,12 @@ export default class ChatStore {
 
   pushMessage(message, gameId) {
 
-    gameId = gameId || this.currentGameId;
+    if (!isString(message)) {
+      console.error('chat pushMessage', message)
+      return
+    }
+
+    gameId = gameId || this.currentGameId
 
     if (message == '_clear') {
       this.messages.set(gameId, [])

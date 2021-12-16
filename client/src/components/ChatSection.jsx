@@ -24,7 +24,7 @@ const ListMessages = observer( ({list}) => {
   }
 
   return (
-    <Box height="31em" overflow="auto">
+    <Box height="36em" overflow="auto">
       <InfiniteScroll items={list} replace={true}>
         {divOne}
       </InfiniteScroll>

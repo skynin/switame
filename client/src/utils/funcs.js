@@ -1,3 +1,15 @@
+export const logBase = (value, base) => {
+	return Math.round(Math.log(Math.max(value, 1) ) / Math.log(base))
+}
+
+export const charCode = (value, count = 0) => {
+  if (value) {
+    value = '' + value
+    return value.charCodeAt(count)
+  }
+	return 'null'
+}
+
 export const isString = (value) => {
 	return typeof value === 'string' || value instanceof String;
 }

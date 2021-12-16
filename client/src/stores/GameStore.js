@@ -9,14 +9,20 @@ export default class GameStore {
 
   constructor() {
     this.games = new Map()
-    // this.addGame(new TicTacToe().initEmpty(), 'current')
-    this.addGame(new TicTacBoom().initEmpty(), 'current')
+    this.addGame(new TicTacToe().initEmpty())
+    this.addGame(new TicTacBoom().initEmpty())
+
     this.addGame(new FooGame().initEmpty().startAutoPlay(), 'second')
   }
 
-  get currGame() {
-    return this.games.get('current')
+  getById(gameID) {
+    return Array.from(this.games).find(
+      ([gmid, gm]) => gmid == gameID || gm.id == gameID || gm.displayName == gameID)?.[1]
   }
+
+/* DELETE get currGame() {
+    return this.games.get('current')
+  }*/
   get secondGame() {
     return this.games.get('second')
   }

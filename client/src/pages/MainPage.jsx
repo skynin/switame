@@ -1,24 +1,20 @@
+
 import { useState, useEffect, useMemo } from 'react';
+import { Link } from "react-router-dom";
 // import { observer } from "mobx-react-lite";
 import { useChatStore, useGameStore } from '../index'
+import { GAMES_ROUTE } from '../utils/consts';
 
 // const AboutPage = observer(() => {
 const MainPage = () => {
 
-  const gameStore = useGameStore()
-  const game = gameStore.currGame
-  const GArea = useMemo(() => game.GameArea('big'), [game.id])
-
-  const chatStore = useChatStore()
-
-  useEffect(() => {
-    chatStore.setCurrentGameId(game.id)
-    return () => chatStore.setCurrentGameId(0)
-  },[game.id])
+  const gameName = GAMES_ROUTE + '/TicTacBoom' // TicTacBoom
 
   return (
     <div>
-      <GArea />
+      <Link to={`${GAMES_ROUTE}/TicTacBoom`}>TicTacBoom</Link>
+      <hr/>
+      <Link to={`${GAMES_ROUTE}/TicTacToe`}>TicTacToe</Link>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { randomInt, shuffleArray } from "../utils/funcs"
+import { randomInt, shuffleArray, logBase } from "../utils/funcs"
 import AiTicTac from './AiTicTac'
 
 export default class AiTicTacBoom extends AiTicTac {
@@ -23,30 +23,90 @@ export default class AiTicTacBoom extends AiTicTac {
     }
   }
 
-  _corners = ['11','55','15','51']
-  _DDDrelaionCells = {
-    22: ['54', '45'],
-    24: ['41', '52'],
-    44: ['21', '12'],
-    42: ['14', '25'],
-    23: ['53'],
-    34: ['31'],
-    43: ['13'],
-    32: ['35'],
+  _oneLevelFreeCells = {board: [], idx: {}}
+  _deepMind(boardCells, freeCells, deepLimit = 1) {
+
+    if (deepLimit && deepLimit > logBase(this.botIntellect, 8)) return null; // 8 для 20 1.441
+
+    // восстанавливаем/сохраняем начальные пустые
+    if (deepLimit <= 1) {
+        this._oneLevelFreeCells.board = boardCells
+        this._oneLevelFreeCells.idx = {}
+        for (let fCell of freeCells) {
+          this._oneLevelFreeCells.idx[fCell.id] = fCell
+        }
+    }
+
+    let savedVarSteps = []
+
+    for (let nCell of freeCells) {
+      let userC = {...nCell, chip: this.userChip, info: `user походил ${nCell.id}`, debug: `check ${deepLimit}`}
+      let tCells = this.boardChange(boardCells, userC)
+      savedVarSteps.push(tCells)
+
+      const winStep = this.checkWin(boardCells, tCells)
+
+      if (deepLimit <= 1) { // глубже проверяем реальный ход юзера см TODO: ниже
+        userC.chip = this.botChip
+        userC.info = `bot походил ${nCell.id}`
+        userC.debug = 'contra'
+      }
+
+      if (winStep) return tCells
+    }
+
+    // console.log('_deepMind', deepLimit)
+
+    // запускаем поиск глубже
+    for (let botVarStep of savedVarSteps) {
+      let deepBoard = this.mergeCells(boardCells, botVarStep)
+      let botDeepFree = this.filterFreeCells(deepBoard)
+
+      let botCell = botVarStep[0]
+
+      let userWin = this._deepMind(deepBoard, botDeepFree, deepLimit+1)
+      if (userWin) continue;
+
+      // можно ходить, но проверяем на возможность
+      if (!this._oneLevelFreeCells.idx[botCell.id]) continue;
+
+      // TODO: для полноценного спуска вглубь надо вызвать _deepMind() с новым параметром - whichStep
+      // Сейчас, по реализации, только проверка на безопасный ход
+      // чтобы не открыть клетку, которая станет победой противника
+
+      botCell.chip = this.botChip
+      botCell.info = `bot походил ${botCell.id}`
+      botCell.debug = 'deep'+deepLimit
+
+      // console.log(this._oneLevelFreeCells.orig, botVarStep)
+
+      return this.boardChange(this._oneLevelFreeCells.board, botCell)
+    }
+
+    return null
   }
 
+  _corners = ['11','55','15','51']
+
   _relaionCells = {
-    22: ['21', '12'],
+    22: ['13'],
+    24: ['35'],
+    44: ['53'],
+    42: ['31'],
+
+    23: ['12','14'],
+    34: ['25','45'],
+    43: ['52','54'],
+    32: ['21','41'],
+    /* 22: ['21', '12'],
     24: ['14', '25'],
     44: ['54', '45'],
     42: ['41', '52'],
     23: ['13'],
     34: ['35'],
     43: ['53'],
-    32: ['31'],
+    32: ['31'],*/
   }
-
-  _DDDinvertRelaionCells = null
 
   _invertRelaionCells = {
     25: '24',
@@ -105,7 +165,8 @@ export default class AiTicTacBoom extends AiTicTac {
   } */
 
   boardChange(origCells, newCells) {
-    newCells = [...newCells]
+
+    newCells = Array.isArray(newCells) ? [...newCells] : [newCells]
 
     const newCell = newCells[0]
 
@@ -140,7 +201,14 @@ export default class AiTicTacBoom extends AiTicTac {
     else {
       let invId = this._invertRelaionCells[newCell.id]
       if (invId && getCellById(invId).chip != newCell.chip) {
-        newCells.push({...newCell, id: invId, chip: 'chip', brim: (getCellById(invId).chip == 'chip' ? '.' : 'brim'), info: `стерта ${invId}`})
+        // let ccc = {...newCell, id: invId, chip: 'chip', brim: (getCellById(invId).chip == 'chip' ? '.' : 'brim'), info: `стерта ${invId}`}
+        let ccc = {...newCell, id: invId, chip: 'chip', brim: 'brim', info: `стерта ${invId}`}
+        newCells.push(ccc)
+        if (this._corners.includes(ccc.id) && getCellById(ccc.id).brim == '.') {
+          ccc.brim = 'brim'
+          ccc.info = `открыта ${ccc.id}`
+        }
+
         // newCells.push({...newCell, id: invId, chip: 'chip', brim: '.', info: `стерта ${invId}`})
       }
       // вторая, если есть, становится обычной, первая уже стерла
@@ -191,13 +259,13 @@ export default class AiTicTacBoom extends AiTicTac {
     let newCell = null
 
     // пробуем закрыть фишки противника
-    if (this.checkBotIQ(this.lowHumanIQ)) {
+    if (this.checkBotIQ(this.avgHumanIQ)) {
       const reducer = (cou, el) => (el.chip == this.userChip ? 1 : 0) + cou
       let countOppo = boardCells.reduce(reducer, 0)
 
       for (let nCell of freeCells) {
         let candidatCell = {...nCell, chip: this.botChip, info: `bot походил ${nCell.id}`, debug:'beat'}
-        const tCount = this.mergeCells(boardCells, this.boardChange(boardCells, [candidatCell])).reduce(reducer, 0)
+        const tCount = this.mergeCells(boardCells, this.boardChange(boardCells, candidatCell)).reduce(reducer, 0)
         if (tCount < countOppo) {
           return [candidatCell]
         }

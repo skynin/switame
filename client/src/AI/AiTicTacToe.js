@@ -9,6 +9,11 @@ export default class AiTicTacToe extends AiTicTac {
     super()
   }
 
+  // крестики нолики требуют меньше интеллекта
+  checkBotIQ(threshold) {
+    return super.checkBotIQ(threshold / 3 * 2)
+  }
+
   DELETEcheckWin(origCells, newCells) {
     // получить итоговое расположение на поле
     let resultCells = this.mergeCells(origCells, newCells)
@@ -61,9 +66,6 @@ export default class AiTicTacToe extends AiTicTac {
 
   // ход бота, случайный выбор
   _botStepFreeCells(boardCells, freeCells) {
-
-    if (freeCells.length > 1) ++this.botIntellect; // интеллект бота растет
-
     let newCell = null
     let winnerCell = freeCells.find(cell => cell.id == this.centerCellID)
 

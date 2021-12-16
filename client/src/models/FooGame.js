@@ -2,6 +2,8 @@ import { randomInt } from '../utils/funcs';
 import GameModel from './GameModel'
 import GameCell from './GameCell';
 import { runInAction } from 'mobx';
+import { observer } from "mobx-react-lite"
+import { Box } from "grommet"
 
 export default class FooGame extends GameModel {
 
@@ -90,5 +92,19 @@ export default class FooGame extends GameModel {
     setTimeout(oneStep, 3000)
 
     return this;
+  }
+
+  GameCell() {
+    return observer( ({cell}) => {
+
+      const chip = cell.chip == 'chip' ? '.' : cell.chip
+      const brim = cell.brim == 'brim' ? '.' : cell.brim
+
+      return (
+        <Box border={cell.effect && cell.effect.indexOf('last') >= 0 ? 'all' : false}>
+          {cell.id} : {chip} - {brim}
+        </Box>
+      )
+    })
   }
 }

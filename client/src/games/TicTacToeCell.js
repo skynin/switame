@@ -6,15 +6,20 @@ import GameCell from "../models/GameCell"
 import { useChatStore } from ".."
 
 const starSymb = String.fromCharCode(0x2727)
+const starCornCleaSymb = String.fromCharCode(0x2726)
 
-function CellShow({chip, brim, wait}) {
+const _clearCorners = ['21','14','45','52']
+
+function CellShow({chip, brim, wait, chipId}) {
 
   let color = chip == 'O' ? 'blue' : (chip == 'X' ? 'green' : 'red')
   if (chip == 'chip') chip = "";
 
   if (wait) {color = 'gray'; chip='?'}
 
-  if (chip == '*') chip = starSymb;
+  if (chip == '*') {
+    chip = _clearCorners.includes(chipId) ? starCornCleaSymb : starSymb;
+  }
 
   return (
     <div style={{color: color, fontSize: "64px"}}>{chip}</div>
@@ -45,10 +50,9 @@ const uniRender = observer ( ({cell}) => {
     winEffect = 'dark-1'
     // winEffect = ''
   }
-// {cell.id}
   return (
     <Box border={border} background={winEffect} align="center" justify="center" onClick={e => clickCell() }>
-      <CellShow chip={cell.chip} wait={cell.wait}/>
+      <CellShow chipId={cell.id} chip={cell.chip} wait={cell.wait}/>
     </Box>
   )
 })
@@ -76,7 +80,8 @@ export default class TicTacToeCell extends GameCell {
       let col = this.id.charAt(0), row=this.id.charAt(1)
 
       if (this._corners.includes(this.id)) {
-        // fff
+        // this.brim = '.'
+        // this.chip = 'chip'
       }
       else if (this.id == 33) { // || this._corners.includes(this.id)) {
         this.brim = '.'
@@ -85,7 +90,6 @@ export default class TicTacToeCell extends GameCell {
       }
       else if (col == 1 || col == this.game.sizeBoard || row == 1 || row == this.game.sizeBoard) {
         this.brim = '.'
-        // this.chip = this._corners.includes(this.id) ? 'chip' : '*'
         this.chip = '*'
       }
     }

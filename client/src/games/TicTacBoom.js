@@ -8,5 +8,7 @@ export default class TicTacBoom extends TicTacToe {
 
     this.variety = 'tic-tac-boom'
     this.sizeBoard = 5
+
+    this.displayName = 'TicTacBoom'
   }
 }
