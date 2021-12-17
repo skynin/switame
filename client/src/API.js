@@ -1,4 +1,5 @@
 import AiTicTacBoom from "./AI/AiTicTacBoom"
+import AiTicTacMoob from "./AI/AiTicTacMoob"
 import AiTicTacToe from "./AI/AiTicTacToe"
 import { nanoid } from "./utils/funcs"
 
@@ -13,6 +14,7 @@ class API {
     this._varietyes = Object.create(null)
     this._varietyes['tic-tac-toe'] = new AiTicTacToe()
     this._varietyes['tic-tac-boom'] = new AiTicTacBoom()
+    this._varietyes['tic-tac-moob'] = new AiTicTacMoob()
 
     this.debugAI = this._varietyes['tic-tac-boom']
   }

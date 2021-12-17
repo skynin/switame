@@ -9,8 +9,8 @@ export default class AiTicTacBoom extends AiTicTac {
     this.boardEdge = 5
     // this.botIntellect = 200
 
-    // this._checkDirections = [[1,1],[-1,-1]] // только диагонали
-    this._checkDirections = [[0,1],[1,0]] // только прямые
+    // this.checkDirections = [[1,1],[-1,-1]] // только диагонали
+    this.checkDirections = [[0,1],[1,0]] // только прямые
 
     if (!this._invertRelaionCells) {
       this._invertRelaionCells = Object.create(null)
@@ -133,15 +133,16 @@ export default class AiTicTacBoom extends AiTicTac {
       return result
     }.bind({cells: Object.create(null)})
 
-    let invId = this._clearedCells[newCell.id]
-    if (invId && getCellById(invId).chip != newCell.chip) {
-      // let ccc = {...newCell, id: invId, chip: 'chip', brim: (getCellById(invId).chip == 'chip' ? '.' : 'brim'), info: `стерта ${invId}`}
-      let ccc = {...newCell, id: invId, chip: 'chip', brim: 'brim', info: `стерта ${invId}`}
-      newCells.push(ccc)
-      if (this._corners.includes(ccc.id) && getCellById(ccc.id).brim == '.') {
-        ccc.brim = 'brim'
-        ccc.info = `открыта ${ccc.id}`
-      }
+    let cleaCells = this._clearedCells[newCell.id]
+    if (cleaCells) {
+      if (!Array.isArray(cleaCells)) cleaCells = [cleaCells]
+
+      for(let invId of cleaCells) {
+        if (getCellById(invId).chip == newCell.chip || getCellById(invId).chip == 'chip') continue;
+        if (getCellById(invId).brim == '.') continue;
+        let ccc = {...newCell, id: invId, chip: 'chip', brim: 'brim', info: `стерта ${invId}`}
+        newCells.push(ccc)
+        }
     }
 
     const checkCells = this._relaionCells[newCell.id] || []
@@ -152,7 +153,7 @@ export default class AiTicTacBoom extends AiTicTac {
       // console.log('boardChange', newCell, origCells)
 
       if (sCell.brim == '.') {
-        newCells.push({...sCell, chip: '*', brim: 'brim', info: `открылась ${sCell.id}`})
+        newCells.push({...sCell, brim: 'brim', info: `открылась ${sCell.id}`})
       }
     }
 
@@ -177,11 +178,7 @@ export default class AiTicTacBoom extends AiTicTac {
       }
     }
 
-    if (this.checkBotIQ(this.maxHumanIQ)) { // умный бот ходит в угол или в центр
-      let cornerCells = freeCells.filter(fCell => this._corners.includes(fCell.id))
-      let iii = randomInt(0, cornerCells.length-1)
-      newCell = cornerCells[iii]
-    }
+    newCell = this._botSquareStepFreeCells(freeCells)
 
     if (!newCell) {
       let iii = randomInt(0, freeCells.length-1)
@@ -189,5 +186,17 @@ export default class AiTicTacBoom extends AiTicTac {
     }
 
     return [{id: newCell.id, chip: this.botChip, info: `bot походил ${newCell.id}`, debug: 'rand'}]
+  }
+
+  _botSquareStepFreeCells(freeCells) {
+    let newCell = null
+
+    if (this.checkBotIQ(this.maxHumanIQ)) { // умный бот ходит в угол
+      let cornerCells = freeCells.filter(fCell => this._corners.includes(fCell.id))
+      let iii = randomInt(0, cornerCells.length-1)
+      newCell = cornerCells[iii]
+    }
+
+    return newCell
   }
 }

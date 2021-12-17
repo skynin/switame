@@ -7,12 +7,11 @@ import { GAMES_ROUTE } from '../utils/consts';
 
 // const AboutPage = observer(() => {
 const MainPage = () => {
-
-  const gameName = GAMES_ROUTE + '/TicTacBoom' // TicTacBoom
-
   return (
     <div>
       <Link to={`${GAMES_ROUTE}/TicTacBoom`}>TicTacBoom</Link>
+      <hr/>
+      <Link to={`${GAMES_ROUTE}/TicTacMoob`}>TicTacMoob</Link>
       <hr/>
       <Link to={`${GAMES_ROUTE}/TicTacToe`}>TicTacToe</Link>
     </div>

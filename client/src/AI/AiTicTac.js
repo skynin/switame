@@ -30,8 +30,9 @@ export default class AiTicTac {
   boardEdge = 3
   centerCellID = '22'
 
+  checkDirections = [[0,1],[1,0],[1,1],[-1,-1]]  // variedCol=0 variedRow=1, variedCol=1 variedRow=0, variedCol=1 variedRow=1
+
   constructor() {
-    this._checkDirections = [[0,1],[1,0],[1,1],[-1,-1]] // variedCol=0 variedRow=1, variedCol=1 variedRow=0, variedCol=1 variedRow=1
   }
 
   // создаем новое расположение фишек на поле
@@ -141,7 +142,7 @@ variedCol=1 variedRow=1
 
       resultBoard.setVerifyCell(nCell)
 
-      for (let ddd of this._checkDirections) { // по всем направлениям
+      for (let ddd of this.checkDirections) { // по всем направлениям
         let found = checkCell(ddd);
         if (found) {
           winCell = nCell
@@ -174,7 +175,7 @@ variedCol=1 variedRow=1
       switch (impact.actData) {
         case 'ready':
           result[0].actData = 'ready'
-          shuffleArray(this._checkDirections)
+          shuffleArray(this.checkDirections)
           break;
         case 'play':
           ++this.botIntellect; // если user завершает досрочно бот все равно будет умнеть

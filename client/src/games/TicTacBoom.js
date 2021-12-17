@@ -1,5 +1,4 @@
 import TicTacToe from './TicTacToe'
-import TicTacToeCell from './TicTacToeCell'
 
 export default class TicTacBoom extends TicTacToe {
 
