@@ -296,7 +296,7 @@ export default class GameModel {
 
       ++this.userTop.total;
     }
-    else if (this.userBottom.effect && this.userTop.effect) { // ничья
+    else if (this.userBottom.effect != 'WIN' && this.userTop.effect != 'WIN') { // ничья
       this.userBottom.effect = null
       this.userTop.effect = null
 

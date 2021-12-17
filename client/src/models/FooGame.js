@@ -18,7 +18,7 @@ export default class FooGame extends GameModel {
     const chip = String.fromCharCode(0x22C7)
     let bI = 0
 
-    for (let iii=7; iii>0; --iii) {
+    for (let iii=9; iii>0; --iii) {
       let tCell = new GameCell(prefixCell+iii, this, {
         chip,
         brim: arrBrim[bI]})
@@ -97,7 +97,7 @@ export default class FooGame extends GameModel {
   GameCell() {
     return observer( ({cell}) => {
 
-      const chip = cell.chip == 'chip' ? '.' : cell.chip
+      const chip = cell.chip == 'chip' ? '*' : cell.chip
       const brim = cell.brim == 'brim' ? '.' : cell.brim
 
       return (
