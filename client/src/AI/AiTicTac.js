@@ -177,6 +177,8 @@ variedCol=1 variedRow=1
           shuffleArray(this._checkDirections)
           break;
         case 'play':
+          ++this.botIntellect; // если user завершает досрочно бот все равно будет умнеть
+
           this.botChip = 'O'
           result[0].actData = 'play'
           break;
@@ -260,7 +262,7 @@ variedCol=1 variedRow=1
       if (winnerResult) {
         setTimeout(() => {
           this.dispatchFinish(winnerResult, dispatcher)
-          this.botIntellect += 6 // бот учится на ошибках
+          this.botIntellect += 8 // бот быстро учится на ошибках
         },50)
       }
       else if (canBotStep) setTimeout(() => {
@@ -274,7 +276,7 @@ variedCol=1 variedRow=1
             winnerResult = this.checkWin(resultCells, fullResult[0].cells)
             if (winnerResult) {
               this.dispatchFinish(winnerResult, dispatcher, `; IQ бота ${this.botIntellect}`)
-              this.botIntellect -= 2 // головокружение от успеха
+              this.botIntellect -= 3 // головокружение от успеха
             }}, 20)
           }, timeOut)
         })
@@ -307,7 +309,7 @@ variedCol=1 variedRow=1
       sendImpact.info = infoData
       dispatcher(sendImpact)
 
-      --this.botIntellect // бот дает фору
+      this.botIntellect -= 2 // бот дает фору
       return
     }
 
@@ -364,6 +366,7 @@ variedCol=1 variedRow=1
     if (this.checkBotIQ(this.maxHumanIQ)) {
       const dCells = this._deepMind(boardCells, freeCells)
       if (dCells) {
+        ++this.botIntellect
         result.cells = dCells
         return [result, {receiver: {kind: 'board'}, wait: false}]
       }

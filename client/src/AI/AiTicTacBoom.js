@@ -89,26 +89,18 @@ export default class AiTicTacBoom extends AiTicTac {
   _corners = ['11','55','15','51']
 
   _relaionCells = {
-    22: ['13'],
-    24: ['35'],
-    44: ['53'],
-    42: ['31'],
+    22: ['35'],
+    24: ['53'],
+    44: ['31'],
+    42: ['13'],
 
-    23: ['12','14'],
-    34: ['25','45'],
-    43: ['52','54'],
-    32: ['21','41'],
-    /* 22: ['21', '12'],
-    24: ['14', '25'],
-    44: ['54', '45'],
-    42: ['41', '52'],
-    23: ['13'],
-    34: ['35'],
-    43: ['53'],
-    32: ['31'],*/
+    23: ['52','54'],
+    34: ['21','41'],
+    43: ['12','14'],
+    32: ['25','45'],
   }
 
-  _invertRelaionCells = {
+  _clearedCells = {
     25: '24',
     35: '34',
     45: '55',
@@ -126,44 +118,6 @@ export default class AiTicTacBoom extends AiTicTac {
     54: '44',
   }
 
-  _clearedCells = {
-    12: ['23'],
-    14: ['23'],
-
-    25: ['34'],
-    45: ['34'],
-
-    54: ['43'],
-    52: ['43'],
-
-    21: ['32'],
-    41: ['32'],
-
-    31: ['22', '42'],
-    53: ['42', '44'],
-    35: ['24', '44'],
-    13: ['22', '24'],
-  }
-
-  /* _clearedCells = {
-    12: [22, 23],
-    14: [23, 24],
-
-    25: [24, 34],
-    45: [34, 44],
-
-    54: [43, 44],
-    52: [42, 43],
-
-    21: [22, 32],
-    41: [32, 42],
-
-    31: [22, 32, 42],
-    53: [42, 43, 44],
-    35: [24, 34, 44],
-    13: [22, 23, 24],
-  } */
-
   boardChange(origCells, newCells) {
 
     newCells = Array.isArray(newCells) ? [...newCells] : [newCells]
@@ -179,77 +133,28 @@ export default class AiTicTacBoom extends AiTicTac {
       return result
     }.bind({cells: Object.create(null)})
 
-    // проверяем центральную клетку, пустая - открываем углы
-    // const centerCell = origCells.find(c => c.id == this.centerCellID)
-    if (newCell.id == this.centerCellID) {
-      for(let corner of this._corners) {
-        newCells.push({...newCell, id: corner, chip: 'chip', brim: 'brim', info: `открылась ${newCell.id}`})
-      }
-    }
-    // проверяем центральную клетку, если надо - закрываем
-    /*else if (this._corners.includes(newCell.id) && centerCell.brim != '.') {
-      newCells.push({...centerCell, chip: 'chip', brim: '.', info: `закрылась ${centerCell.id}`})
-      for(let corner of this._corners) {
-        if (newCell.id == corner) continue;
-
-        newCells.push({...newCell, id: corner, chip: 'chip', brim: 'brim', info: `обычная ${corner}`})
-      }
-    }*
-    /*else if (this._corners.includes(newCell.id) && centerCell?.chip == newCell.chip) { // проверяем центральную клетку, если надо - закрываем
-      newCells.push({...centerCell, chip: 'chip', brim: '.', info: `закрылась ${centerCell.id}`})
-    }*/
-    else {
-      let invId = this._invertRelaionCells[newCell.id]
-      if (invId && getCellById(invId).chip != newCell.chip) {
-        // let ccc = {...newCell, id: invId, chip: 'chip', brim: (getCellById(invId).chip == 'chip' ? '.' : 'brim'), info: `стерта ${invId}`}
-        let ccc = {...newCell, id: invId, chip: 'chip', brim: 'brim', info: `стерта ${invId}`}
-        newCells.push(ccc)
-        if (this._corners.includes(ccc.id) && getCellById(ccc.id).brim == '.') {
-          ccc.brim = 'brim'
-          ccc.info = `открыта ${ccc.id}`
-        }
-
-        // newCells.push({...newCell, id: invId, chip: 'chip', brim: '.', info: `стерта ${invId}`})
-      }
-      // вторая, если есть, становится обычной, первая уже стерла
-      // 54: 22, 45: 22
-      /*Object.entries(this._invertRelaionCells)
-        .filter(([masterCell, slaveCell]) => slaveCell == invId)
-        .forEach(([masterCell, slaveCell])=> {
-          if (masterCell != newCell.id && getCellById(masterCell).chip == '*')
-          newCells.push({...newCell, id: masterCell, chip: 'chip', brim: 'brim', info: `обычная ${masterCell}`})
-        })*/
-
-      const checkCells = this._relaionCells[newCell.id] || []
-
-      for (let cheC of checkCells) {
-        const sCell = getCellById(cheC)
-
-        // console.log('boardChange', newCell, origCells)
-
-        if (sCell.brim == '.') {
-          newCells.push({...sCell, chip: '*', brim: 'brim', info: `открылась ${sCell.id}`})
-        }
+    let invId = this._clearedCells[newCell.id]
+    if (invId && getCellById(invId).chip != newCell.chip) {
+      // let ccc = {...newCell, id: invId, chip: 'chip', brim: (getCellById(invId).chip == 'chip' ? '.' : 'brim'), info: `стерта ${invId}`}
+      let ccc = {...newCell, id: invId, chip: 'chip', brim: 'brim', info: `стерта ${invId}`}
+      newCells.push(ccc)
+      if (this._corners.includes(ccc.id) && getCellById(ccc.id).brim == '.') {
+        ccc.brim = 'brim'
+        ccc.info = `открыта ${ccc.id}`
       }
     }
 
-    // стрираем при открытии
-    /*newCells.filter(c => c.chip == '*').forEach(el => {
-      const checkCells = this._clearedCells[el.id] || []
+    const checkCells = this._relaionCells[newCell.id] || []
 
-      for (let cheC of checkCells) {
+    for (let cheC of checkCells) {
+      const sCell = getCellById(cheC)
 
-        // сносим чужие и камни
-        // const sCell = origCells.find(oc => oc.id == cheC && oc.chip != newCell.chip)
+      // console.log('boardChange', newCell, origCells)
 
-        // сносим только чужие, камни сохраняем
-        const sCell = origCells.find(oc => oc.id == cheC && oc.brim != '.' && oc.chip != newCell.chip)
-
-        // сносим всех
-        // const sCell = origCells.find(oc => oc.id == cheC && oc.brim != '.')
-        if (sCell) newCells.push({...sCell, chip: 'chip', brim: 'brim', info: `стерта ${sCell.id}`})
+      if (sCell.brim == '.') {
+        newCells.push({...sCell, chip: '*', brim: 'brim', info: `открылась ${sCell.id}`})
       }
-    })*/
+    }
 
     return newCells
   }
@@ -272,28 +177,17 @@ export default class AiTicTacBoom extends AiTicTac {
       }
     }
 
+    if (this.checkBotIQ(this.maxHumanIQ)) { // умный бот ходит в угол или в центр
+      let cornerCells = freeCells.filter(fCell => this._corners.includes(fCell.id))
+      let iii = randomInt(0, cornerCells.length-1)
+      newCell = cornerCells[iii]
+    }
+
     if (!newCell) {
       let iii = randomInt(0, freeCells.length-1)
       newCell = freeCells[iii]
     }
 
     return [{id: newCell.id, chip: this.botChip, info: `bot походил ${newCell.id}`, debug: 'rand'}]
-  }
-
-  DEBUGboardChange(origCells, newCells) {
-
-    newCells = [...newCells]
-
-    if (newCells[0].chip != 'X') return newCells
-
-    origCells = shuffleArray(origCells, true) // DEBUG
-
-    let chCell = origCells.find(c => c.brim == '.' && !newCells.some(nc => nc.id == c.id))
-
-    if (chCell) newCells.push({...chCell, brim: 'brim', info: `Измененная ${chCell.id}`})
-
-    console.log('boardChange', newCells)
-
-    return newCells
   }
 }

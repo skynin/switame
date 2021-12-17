@@ -1,7 +1,6 @@
 import React, { useEffect } from "react"
 import { Box } from "grommet"
 import { observer } from "mobx-react-lite"
-import { makeObservable, observable, runInAction, action } from "mobx"
 import GameCell from "../models/GameCell"
 import { useChatStore } from ".."
 
@@ -77,13 +76,12 @@ export default class TicTacToeCell extends GameCell {
   actClear(impact) {
     super.actClear(impact)
     if (this.game.variety == 'tic-tac-boom') {
+
+      if (this._corners.includes(this.id)) return;
+
       let col = this.id.charAt(0), row=this.id.charAt(1)
 
-      if (this._corners.includes(this.id)) {
-        // this.brim = '.'
-        // this.chip = 'chip'
-      }
-      else if (this.id == 33) { // || this._corners.includes(this.id)) {
+      if (this.id == 33) { // || this._corners.includes(this.id)) {
         this.brim = '.'
         this.chip = 'chip'
         this.effect = 'hide'
