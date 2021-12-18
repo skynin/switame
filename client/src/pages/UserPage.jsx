@@ -93,12 +93,15 @@ const UpdateSection = ({currUser}) => {
   )
 }
 
-const TotalSection = () => {
+const TODOTotalSection = () => {
   return (
     <div>
-      <p>Успехи</p>
+      <p>Успехи<br/>...в разработке</p>
     </div>
   )
+}
+const TotalSection = () => {
+  return ''
 }
 
 const UserPage = () => {
@@ -107,7 +110,7 @@ const UserPage = () => {
   const currUser = userStore.currUser;
 
   return (
-    <GridResponsive gridType={'user'}>
+    <GridResponsive gridType="user">
       <UpdateSection currUser={currUser} gridArea="lSection"/>
       <TotalSection gridArea="rSection"/>
     </GridResponsive>

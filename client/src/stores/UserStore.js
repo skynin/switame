@@ -1,4 +1,5 @@
 import UserModel from "../models/UserModel"
+import { makeObservable, observable, action, computed } from "mobx"
 
 export default class UserStore {
 
@@ -12,6 +13,14 @@ export default class UserStore {
     this.gameBot = new UserModel({nickname: 'gameBot'})
 
     this.allUsers = new Set()
+
+    makeObservable(this,{
+      allUsers: observable,
+      topGamers: computed,
+      currUser: computed,
+      addUser: action,
+      setUser: action
+    })
   }
 
   addUser(user) {

@@ -48,7 +48,7 @@ function App() {
           </Box>
           <Text>Skynin Wit Games <b>v0.1.0</b></Text>
         </Box>
-        <Button label="About" onClick={()=>navigate(ABOUT_ROUTE)}/>
+        <Button label="О сайте" onClick={()=>navigate(ABOUT_ROUTE)}/>
       </Footer>
   </Grommet>
   );

@@ -20,7 +20,7 @@ export default class UserModel {
 
   total = 0
 
-  constructor({nickname} = {nickname: 'foon'}) {
+  constructor({nickname} = {nickname: 'Foon'}) {
     this._initNewUser()
 
     this.nickname = nickname
@@ -46,6 +46,11 @@ export default class UserModel {
     this.avatarType = arrTypes[randomInt(0, arrTypes.length-1)]
 
     this.avatarId = createAvatarId(this.id, this.authId)
+
+    this.isAuth = false
+    this.nickname = 'User ' + randomInt(1,999)
+
+    this.total = 0
   }
 
   updateFrom(obj) {
@@ -68,7 +73,8 @@ export default class UserModel {
       authId: this.authId,
       avatarType: this.avatarType,
       avatarId: this.avatarId,
-      nickname: this.nickname
+      nickname: this.nickname,
+      total: this.total
     }));
   }
 
@@ -82,7 +88,8 @@ export default class UserModel {
         this.authId = rUser.authId
         this.avatarType = rUser.avatarType
         this.nickname = rUser.nickname
-        this.avatarId = rUser.avatarId
+        this.avatarId = rUser.avatarId,
+        this.total = rUser.total
       })
     }
   }

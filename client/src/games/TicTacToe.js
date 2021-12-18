@@ -45,9 +45,6 @@ export default class TicTacToe extends GameModel {
   GameBoard(args) {
     const game = this
 
-    const rowSize = 'xsmall';
-    const columnSize = 'xsmall';
-
     let arrFill = []
     for (let iii=1; iii <= this.sizeBoard; ++iii) {
       arrFill.push(iii)
@@ -67,8 +64,9 @@ export default class TicTacToe extends GameModel {
 
     const arrCells = Object.entries(game.cells);
 
-    return () => {
+    const {rowSize, columnSize} = this.optionsCell
 
+    return () => {
       return (
       <Grid
         rows={arrFill.fill(rowSize)}

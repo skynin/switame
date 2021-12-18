@@ -1,5 +1,6 @@
 import { tempid } from '../utils/funcs'
 import { action, makeObservable, observable, runInAction } from "mobx"
+import { isMobile } from 'react-device-detect'
 
 /*
 Шаблон-пример ячейки
@@ -94,5 +95,27 @@ export default class GameCell {
       chip: this.chip,
       wait: this.wait,
     }
+  }
+
+  static optionsCell(sizeBoard) {
+
+    let rowSize = 'xsmall';
+    let fontSize = '4em'
+
+    if (isMobile && sizeBoard > 3) {
+      // console.log('hw',window.screen.height,window.screen.width)
+
+      let sizeCell = Math.min(Math.ceil(window.screen.height / sizeBoard), Math.ceil(window.screen.width / sizeBoard))-5
+
+      rowSize = `${sizeCell}px`
+      fontSize = Math.round(sizeCell * 0.7)
+      fontSize = `${fontSize}px`
+
+      // console.log('rowSize',rowSize)
+    }
+
+    let columnSize = rowSize
+
+    return {rowSize, columnSize, fontSize}
   }
 }

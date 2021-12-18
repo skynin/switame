@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Button, Menu, Header, Layer, FormField, TextInput, Box, Notification } from 'grommet';
-import { USER_ROUTE } from '../utils/consts';
+import { GAMES_ROUTE, USER_ROUTE } from '../utils/consts';
 import { Home as IcoHome } from 'grommet-icons'
 import { useNavigate } from 'react-router-dom'
-import { useUserStore } from '../index'
+import { useGameStore, useUserStore } from '../index'
+import { observer } from 'mobx-react-lite';
 
-function HeaderMenu() {
+const HeaderMenu = observer (() => {
 
   const userStore = useUserStore()
   const currUser = userStore.currUser
@@ -13,6 +14,10 @@ function HeaderMenu() {
   const [showModal, setShowModal] = useState(false)
 
   const navigate = useNavigate()
+
+  const activedGames = useGameStore().activedGames.map(gm => {
+    return { label: gm.displayName, onClick: () => {navigate(GAMES_ROUTE + '/' + gm.displayName)} }
+  })
 
   const leftMenu = useMemo(() => {
     const leftMenu = [
@@ -32,11 +37,12 @@ function HeaderMenu() {
   return (
       <Header background="brand">
         <Button icon={<IcoHome />} hoverIndicator onClick={()=>navigate('/')}/>
+        {activedGames.length != 0 && <Menu label="Активные игры" items={activedGames} /> }
         <Menu label="account" items={leftMenu} />
         {showModal && <AuthModal currUser={currUser} setShow={setShowModal}/>}
       </Header>
   )
-}
+})
 
 function AuthModal({setShow, currUser}) {
 

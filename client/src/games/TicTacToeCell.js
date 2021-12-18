@@ -12,15 +12,17 @@ const _clearDouble = ['23','34','43','32']
 const _corners = ['11','15','51','55']
 const _none = ['21','14','52','45']
 
-function CellShow({chip, brim, wait, chipId}) {
+function CellShow({chip, brim, wait, cell}) {
 
   let color = chip == 'O' ? 'blue' : (chip == 'X' ? 'green' : 'red')
   if (chip == 'chip') chip = "";
 
   if (wait) {color = 'gray'; chip='?'}
 
+  let {fontSize} = cell.game.optionsCell
+
   return (
-    <div style={{color: color, fontSize: "64px"}}>{chip}</div>
+    <div style={{color, fontSize}}>{chip}</div>
   )
 }
 
@@ -57,11 +59,12 @@ const uniRender = observer ( ({cell}) => {
     showChip = cell.symb
   }
 
+  // <Box width="xxsmall" height="xxsmall" gap="xxsmall" border={border} background={winEffect} align="center" justify="center" onClick={e => clickCell() }>
+
   // {cell.id}
   return (
     <Box border={border} background={winEffect} align="center" justify="center" onClick={e => clickCell() }>
-      {cell.id}
-      <CellShow chipId={cell.id} chip={showChip} wait={cell.wait}/>
+      <CellShow cell={cell} chip={showChip} wait={cell.wait}/>
     </Box>
   )
 })

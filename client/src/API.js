@@ -17,6 +17,8 @@ class API {
     this._varietyes['tic-tac-moob'] = new AiTicTacMoob()
 
     this.debugAI = this._varietyes['tic-tac-boom']
+
+    this.debugMode = window.location.href.includes('//localhost')
   }
 
   dispatch(inAct) {
@@ -25,7 +27,7 @@ class API {
 
     setTimeout((impact) => { // может быть дооооооооолгим
 
-      console.log('dispatch', impact)
+      if (this.debugMode) console.log('dispatch', impact);
 
       for (let kindOf of ['game'])
         if (impact?.sender.kind == kindOf) {
@@ -40,7 +42,7 @@ class API {
                 response = response.map(r => {r.stamp = impact.stamp; return r})
               else response.stamp = impact.stamp
 
-              console.info('response', response)
+              if (this.debugMode) console.info('response', response);
 
               responser(response)
             })}

@@ -13,11 +13,14 @@ const RightSide = observer(() => {
 
   return (
   <div>
-    <Box background="light-2">
+    <Box background="light-2" gap="xxsmall">
       <h3>ТОП игроки</h3>
-      {top.map(gamers =>
-        <Box background="light-1" key={gamers.id}>
-          {gamers.nickname} : {gamers.total}
+      {top.map(gamer =>
+        <Box background="light-1" key={gamer.id}>
+          <Box direction="row" gap="xsmall" align="center">
+          <img className="wit-topgamer" src={gamer.avatarUrl()}/>
+          <p className="margin-0">{gamer.nickname} : <b>{gamer.total}</b></p>
+          </Box>
         </Box>
         )}
     </Box>

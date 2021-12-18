@@ -1,3 +1,25 @@
 .App {
   text-align: center;
 }
+
+.wit-anchor {
+  color: #7D4CDB;
+  font-weight: 600;
+  box-sizing: border-box;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.wit-anchor:hover {
+  text-decoration: underline;
+}
+
+img.wit-topgamer {
+  border-radius: 100%;
+  width: 2em;
+  height: 2em;
+}
+
+.margin-0 {
+  margin: 0;
+}

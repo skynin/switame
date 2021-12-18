@@ -1,8 +1,8 @@
 import TicTacToe from "../games/TicTacToe"
-import GameModel from "../models/GameModel"
 import FooGame from "../models/FooGame"
 import TicTacBoom from "../games/TicTacBoom"
 import TicTacMoob from "../games/TicTacMoob"
+import { makeObservable, action, computed } from "mobx"
 
 export default class GameStore {
 
@@ -14,7 +14,11 @@ export default class GameStore {
     this.addGame(new TicTacBoom().initEmpty())
     this.addGame(new TicTacMoob().initEmpty())
 
-    this.addGame(new FooGame().initEmpty().startAutoPlay(), 'second')
+    makeObservable(this, {
+      activedGames: computed,
+      secondGame: computed,
+      addGame: action,
+    })
   }
 
   getById(gameID) {
@@ -22,10 +26,17 @@ export default class GameStore {
       ([gmid, gm]) => gmid == gameID || gm.id == gameID || gm.displayName == gameID)?.[1]
   }
 
-/* DELETE get currGame() {
-    return this.games.get('current')
-  }*/
+  get activedGames() {
+    return Array.from(this.games).filter(([gmid, gm]) => gmid != 'second' && gm.status.id != 'ready')
+      .map(([gmid, gm]) => gm)
+  }
+
   get secondGame() {
+    let result = this.games.get('second')
+    if (result) return result
+
+    this.addGame(new FooGame().initEmpty().startAutoPlay(), 'second')
+
     return this.games.get('second')
   }
 

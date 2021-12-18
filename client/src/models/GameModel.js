@@ -296,7 +296,7 @@ export default class GameModel {
 
       ++this.userTop.total;
     }
-    else if (this.userBottom.effect != 'WIN' && this.userTop.effect != 'WIN') { // ничья
+    else if (info.winner == '?') { // ничья
       this.userBottom.effect = null
       this.userTop.effect = null
 
@@ -455,6 +455,13 @@ GameBoardHead(args) {
         <Box>{game.infoLine}</Box>
       )
     })
+  }
+
+  _optsCell = null
+
+  get optionsCell() {
+    if (this._optsCell) return this._optsCell
+    return this._optsCell = GameCell.optionsCell(this.sizeBoard)
   }
 }
 
