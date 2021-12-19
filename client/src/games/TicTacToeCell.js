@@ -14,7 +14,8 @@ const _none = ['21','14','52','45']
 
 function CellShow({chip, brim, wait, cell}) {
 
-  let color = chip == 'O' ? 'blue' : (chip == 'X' ? 'green' : 'red')
+  // https://www.w3schools.com/colors/colors_names.asp
+  let color = chip == 'O' ? 'blue' : (chip == 'X' ? 'green' : 'PeachPuff')
   if (chip == 'chip') chip = "";
 
   if (wait) {color = 'gray'; chip='?'}
@@ -41,18 +42,18 @@ const uniRender = observer ( ({cell}) => {
     }
   },[cell.info])
 
-  let winEffect = cell.brim == 'DRAW' ? 'accent-4' : (cell.effect == 'WIN' ? 'accent-1' : '')
-  if (cell.brim == '.') winEffect = 'neutral-3'
-
+  let winEffect = ''
   let border = 'all'
   if (cell.effect == 'hide') {
     border = false
     winEffect = 'dark-3'
-    // winEffect = ''
   }
   else if (cell.effect == 'none') {
     winEffect = 'light-4'
   }
+
+  winEffect = cell.brim == 'DRAW' ? 'accent-4' : (cell.effect == 'WIN' ? 'accent-1' : winEffect)
+  if (cell.brim == '.') winEffect = 'neutral-3'
 
   let showChip = cell.chip
   if (cell.symb && (showChip == 'chip' || showChip == '*')) {
