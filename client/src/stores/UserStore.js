@@ -36,6 +36,6 @@ export default class UserStore {
   }
 
   get topGamers() {
-    return Array.from(this.allUsers).filter(a => a.total > 0).sort((a, b) => a.total > b.total)
+    return Array.from(this.allUsers).filter(a => a.total > 0).sort((a, b) => a.total < b.total ? 1 : -1)
   }
 }
